@@ -133,14 +133,104 @@ function tryRarity() {
     sessionStorage.setItem('chabels_rarity_gate', 'true');
     sessionStorage.setItem('chabels_rarity_score', score);
     sessionStorage.setItem('chabels_rarity_player', name);
-    const overlay = document.getElementById('gate-overlay');
-    overlay.style.transition = 'opacity 0.5s';
-    overlay.style.opacity = '0';
-    setTimeout(() => {
-      overlay.remove();
-      document.body.style.overflow = '';
-    }, 500);
+    showGrandEntrance();
   };
+}
+
+function showGrandEntrance() {
+  const overlay = document.getElementById('gate-overlay');
+  overlay.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;">
+      <div style="text-align:center;position:relative;">
+        <style>
+          @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+          @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+          @keyframes goldPulse { 0%,100% { text-shadow: 0 0 20px rgba(212,175,55,0.3); } 50% { text-shadow: 0 0 40px rgba(212,175,55,0.8), 0 0 80px rgba(212,175,55,0.3); } }
+          @keyframes lineExpand { from { width:0; } to { width:200px; } }
+          @keyframes ringReveal { from { opacity:0; transform:scale(0.5) rotate(-10deg); } to { opacity:1; transform:scale(1) rotate(0deg); } }
+          @keyframes statSlide { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+          .entrance-trophy { animation: ringReveal 0.8s ease-out forwards; font-size: 5rem; opacity:0; }
+          .entrance-title { animation: fadeUp 0.8s ease-out 0.3s forwards; opacity:0; }
+          .entrance-motto { animation: fadeUp 0.6s ease-out 0.6s forwards; opacity:0; }
+          .entrance-line { animation: lineExpand 0.8s ease-out 0.8s forwards; width:0; }
+          .entrance-stats { animation: fadeIn 0.6s ease-out 1.0s forwards; opacity:0; }
+          .entrance-stat { animation: statSlide 0.4s ease-out forwards; opacity:0; }
+          .entrance-stat:nth-child(1) { animation-delay: 1.2s; }
+          .entrance-stat:nth-child(2) { animation-delay: 1.4s; }
+          .entrance-stat:nth-child(3) { animation-delay: 1.6s; }
+          .entrance-stat:nth-child(4) { animation-delay: 1.8s; }
+          .entrance-champs { animation: fadeUp 0.6s ease-out 2.2s forwards; opacity:0; }
+          .entrance-enter { animation: fadeUp 0.6s ease-out 2.8s forwards; opacity:0; }
+          .entrance-title-text { animation: goldPulse 2s ease-in-out 1.2s infinite; }
+        </style>
+        
+        <div class="entrance-trophy">🏀</div>
+        
+        <div class="entrance-title" style="margin:1rem 0 0.25rem;">
+          <h1 class="entrance-title-text" style="font-size:clamp(2.5rem,6vw,4rem);font-weight:700;color:#d4af37;letter-spacing:3px;">CHABELS DYNASTY</h1>
+        </div>
+        
+        <div class="entrance-motto">
+          <p style="color:#999;font-size:0.9rem;letter-spacing:4px;text-transform:uppercase;">Rebound &bull; Execute &bull; Defend</p>
+        </div>
+        
+        <div style="display:flex;justify-content:center;margin:1.5rem 0;">
+          <div class="entrance-line" style="height:2px;background:linear-gradient(90deg,transparent,#d4af37,transparent);"></div>
+        </div>
+        
+        <div class="entrance-stats" style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:1.5rem 0;">
+          <div class="entrance-stat" style="text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#d4af37;">10</div>
+            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Teams</div>
+          </div>
+          <div class="entrance-stat" style="text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#d4af37;">3</div>
+            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Seasons</div>
+          </div>
+          <div class="entrance-stat" style="text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#d4af37;">3</div>
+            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Champions</div>
+          </div>
+          <div class="entrance-stat" style="text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#d4af37;">0</div>
+            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Repeats</div>
+          </div>
+        </div>
+        
+        <div class="entrance-champs">
+          <div style="display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin:1rem 0;">
+            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;">
+              <div style="font-size:0.65rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2023-24</div>
+              <div style="color:#d4af37;font-weight:700;font-size:0.95rem;">🏆 Christian/Mitch</div>
+            </div>
+            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;">
+              <div style="font-size:0.65rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2024-25</div>
+              <div style="color:#d4af37;font-weight:700;font-size:0.95rem;">🏆 Nolan</div>
+            </div>
+            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;">
+              <div style="font-size:0.65rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2025-26</div>
+              <div style="color:#d4af37;font-weight:700;font-size:0.95rem;">🏆 Logan</div>
+            </div>
+          </div>
+          <p style="color:#555;font-size:0.8rem;margin-top:0.75rem;font-style:italic;">Three seasons. Three champions. No dynasty... yet.</p>
+        </div>
+        
+        <div class="entrance-enter" style="margin-top:2rem;">
+          <button onclick="dismissEntrance()" style="padding:0.85rem 2.5rem;background:transparent;color:#d4af37;border:2px solid #d4af37;border-radius:50px;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.background='#d4af37';this.style.color='#000';" onmouseout="this.style.background='transparent';this.style.color='#d4af37';">Enter the League</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function dismissEntrance() {
+  const overlay = document.getElementById('gate-overlay');
+  overlay.style.transition = 'opacity 0.8s';
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+    overlay.remove();
+    document.body.style.overflow = '';
+  }, 800);
 }
 
 // On page load
