@@ -237,16 +237,9 @@ function showGrandEntrance() {
           .entrance-title-text { animation: goldPulse 2s ease-in-out 1.2s infinite; }
         </style>
         
-        <div class="entrance-trophy" style="line-height:1;">
-          <div style="position:relative;display:inline-block;">
-            <img src="img/logan-champ.jpg" alt="Reigning Champion" style="width:clamp(140px,35vw,200px);border-radius:12px;border:3px solid #d4af37;box-shadow:0 8px 32px rgba(212,175,55,0.3);">
-            <div style="position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);background:#d4af37;color:#000;padding:0.25rem 1rem;border-radius:50px;font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;">REIGNING CHAMPION</div>
-          </div>
-          <div style="margin-top:1.25rem;font-size:1.2rem;font-weight:700;color:#fff;">Logan</div>
-          <div style="font-size:0.75rem;color:#999;margin-top:0.15rem;">2025-26 Champion &bull; 34-6</div>
-        </div>
+        <div class="entrance-trophy" style="line-height:1;">🏀</div>
         
-        <div class="entrance-title" style="margin:1.5rem 0 0.25rem;">
+        <div class="entrance-title" style="margin:1rem 0 0.25rem;">
           <h1 class="entrance-title-text" style="font-size:clamp(1.8rem,6vw,3.5rem);font-weight:700;color:#d4af37;letter-spacing:2px;">CHABELS DYNASTY</h1>
         </div>
         
