@@ -306,7 +306,14 @@ function dismissEntrance() {
   }, 800);
 }
 
-// On page load
+// On page load — skip rarity question, show grand entrance only
 if (!checkGate()) {
-  document.addEventListener('DOMContentLoaded', showGate);
+  document.addEventListener('DOMContentLoaded', function() {
+    var overlay = document.createElement('div');
+    overlay.id = 'gate-overlay';
+    overlay.innerHTML = '<div></div>';
+    document.body.prepend(overlay);
+    document.body.style.overflow = 'hidden';
+    showGrandEntrance();
+  });
 }
