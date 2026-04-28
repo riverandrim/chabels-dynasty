@@ -297,10 +297,11 @@ function showGrandEntrance() {
 }
 
 function dismissEntrance() {
-  const overlay = document.getElementById('gate-overlay');
+  sessionStorage.setItem('chabels_rarity_gate', 'true');
+  var overlay = document.getElementById('gate-overlay');
   overlay.style.transition = 'opacity 0.8s';
   overlay.style.opacity = '0';
-  setTimeout(() => {
+  setTimeout(function() {
     overlay.remove();
     document.body.style.overflow = '';
   }, 800);
