@@ -46,9 +46,9 @@ function showGate() {
     if (e.key === 'Enter') { sugBox.style.display = 'none'; tryRarity(); }
   });
   
-  // Autocomplete suggestions  
-  gateInput.addEventListener('input', function() {
-    var val = this.value.trim().toLowerCase();
+  // Autocomplete suggestions — use both input and keyup for maximum compatibility
+  function handleAutocomplete() {
+    var val = document.getElementById('gate-input').value.trim().toLowerCase();
     var sug = document.getElementById('gate-suggestions');
     if (!sug) return;
     if (val.length < 2) { sug.style.display = 'none'; return; }
@@ -104,6 +104,9 @@ function showGate() {
       });
     });
   });
+  
+  gateInput.addEventListener('input', handleAutocomplete);
+  gateInput.addEventListener('keyup', handleAutocomplete);
   
   // Hide suggestions on outside click
   document.addEventListener('click', function(e) {
