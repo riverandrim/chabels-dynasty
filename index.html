@@ -40,6 +40,56 @@
     <p class="hero-subtitle">The definitive dynasty fantasy basketball league. Real-time data. Custom scoring. Championship legacy.</p>
   </section>
 
+  <!-- Draft Lottery Countdown -->
+  <section class="section" style="padding-bottom:1rem;">
+    <div style="background:linear-gradient(135deg,var(--dark),var(--dark-mid));border:2px solid var(--gold);border-radius:16px;padding:2rem;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at center,rgba(212,175,55,0.05) 0%,transparent 70%);"></div>
+      <div style="position:relative;z-index:1;">
+        <div style="font-size:0.7rem;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:0.5rem;">🎰 2026 Draft Lottery</div>
+        <div style="font-size:0.85rem;color:var(--gray-text);margin-bottom:1.25rem;">June 3, 2026 &bull; 6:30 PM &bull; Before NBA Finals Game 1</div>
+        
+        <div id="lottery-countdown" style="display:flex;gap:clamp(0.5rem,2vw,1.5rem);justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;">
+          <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:0.75rem 1rem;min-width:70px;">
+            <div id="lot-days" style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:var(--gold);line-height:1;">--</div>
+            <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--gray-text);margin-top:0.2rem;">Days</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:0.75rem 1rem;min-width:70px;">
+            <div id="lot-hours" style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:var(--gold);line-height:1;">--</div>
+            <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--gray-text);margin-top:0.2rem;">Hours</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:0.75rem 1rem;min-width:70px;">
+            <div id="lot-min" style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:var(--gold);line-height:1;">--</div>
+            <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--gray-text);margin-top:0.2rem;">Min</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:0.75rem 1rem;min-width:70px;">
+            <div id="lot-sec" style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:var(--gold);line-height:1;">--</div>
+            <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--gray-text);margin-top:0.2rem;">Sec</div>
+          </div>
+        </div>
+        
+        <div style="font-size:0.75rem;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.75rem;">Lottery Odds for #1 Pick</div>
+        <div style="display:flex;justify-content:center;gap:0.5rem;flex-wrap:wrap;">
+          <div style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:6px;padding:0.4rem 0.8rem;text-align:center;">
+            <div style="color:var(--white);font-weight:700;font-size:0.9rem;">Schu</div>
+            <div style="color:var(--gold);font-weight:700;font-size:1.1rem;">40%</div>
+          </div>
+          <div style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:6px;padding:0.4rem 0.8rem;text-align:center;">
+            <div style="color:var(--white);font-weight:700;font-size:0.9rem;">Austin</div>
+            <div style="color:var(--gold);font-weight:700;font-size:1.1rem;">30%</div>
+          </div>
+          <div style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:6px;padding:0.4rem 0.8rem;text-align:center;">
+            <div style="color:var(--white);font-weight:700;font-size:0.9rem;">Nolan</div>
+            <div style="color:var(--gold);font-weight:700;font-size:1.1rem;">20%</div>
+          </div>
+          <div style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:6px;padding:0.4rem 0.8rem;text-align:center;">
+            <div style="color:var(--white);font-weight:700;font-size:0.9rem;">Chris/Mitch</div>
+            <div style="color:var(--gold);font-weight:700;font-size:1.1rem;">10%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Reigning Champion -->
   <section class="section" style="padding-bottom:1rem;">
     <div style="background:linear-gradient(135deg,var(--dark),var(--dark-mid));border:2px solid var(--gold);border-radius:16px;padding:2rem;text-align:center;position:relative;overflow:hidden;">
@@ -122,6 +172,26 @@
     renderStandings('standings');
     renderMatchups('matchups');
     renderTransactions('transactions');
+    
+    // Draft Lottery Countdown — June 3, 2026 6:30 PM CT
+    var LOTTERY_DATE = new Date('2026-06-03T18:30:00-05:00');
+    function updateLottery() {
+      var now = new Date();
+      var diff = LOTTERY_DATE - now;
+      if (diff <= 0) {
+        document.getElementById('lot-days').textContent = '0';
+        document.getElementById('lot-hours').textContent = '0';
+        document.getElementById('lot-min').textContent = '0';
+        document.getElementById('lot-sec').textContent = '0';
+        return;
+      }
+      document.getElementById('lot-days').textContent = Math.floor(diff / 86400000);
+      document.getElementById('lot-hours').textContent = Math.floor((diff % 86400000) / 3600000);
+      document.getElementById('lot-min').textContent = Math.floor((diff % 3600000) / 60000);
+      document.getElementById('lot-sec').textContent = Math.floor((diff % 60000) / 1000);
+    }
+    updateLottery();
+    setInterval(updateLottery, 1000);
   </script>
 </body>
 </html>
