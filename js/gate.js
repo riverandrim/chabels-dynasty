@@ -25,7 +25,7 @@ function showGate() {
           <p style="color:#999;font-size:0.85rem;margin-bottom:1rem;">The more obscure, the better. All-time. Any era.</p>
           <div style="position:relative;">
             <input type="text" id="gate-input" placeholder="Type a player name..." style="width:100%;background:#0a0a0a;border:2px solid #333;color:#fff;padding:0.75rem 0.75rem;border-radius:8px;font-size:1rem;font-family:inherit;text-align:center;box-sizing:border-box;" autocomplete="off" autocapitalize="words">
-            <div id="gate-suggestions" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1a1a1a;border:1px solid #444;border-top:none;border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;z-index:10;"></div>
+            <div id="gate-suggestions" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1a1a1a;border:1px solid #d4af37;border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;"></div>
           </div>
           <div id="gate-result" style="margin-top:1rem;display:none;"></div>
           <button id="gate-btn" onclick="tryRarity()" style="margin-top:1.25rem;width:100%;padding:0.85rem;background:#d4af37;color:#000;border:none;border-radius:8px;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.3s;">Check Rarity</button>
@@ -46,29 +46,33 @@ function showGate() {
     if (e.key === 'Enter') { sugBox.style.display = 'none'; tryRarity(); }
   });
   
-  // Build name list for autocomplete
-  var gateAllNames = [];
-  if (typeof NBA_ALL_TIME !== 'undefined') {
-    gateAllNames = Object.keys(NBA_ALL_TIME).map(function(k) {
-      return k.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-    });
-  }
-  
-  // Autocomplete suggestions
+  // Autocomplete suggestions  
   gateInput.addEventListener('input', function() {
     var val = this.value.trim().toLowerCase();
     var sug = document.getElementById('gate-suggestions');
     if (!sug) return;
-    if (val.length < 2 || gateAllNames.length === 0) { sug.style.display = 'none'; return; }
+    if (val.length < 2) { sug.style.display = 'none'; return; }
+    if (typeof NBA_ALL_TIME === 'undefined') { sug.style.display = 'none'; return; }
+    
+    // Build name list from keys each time (safe, no caching issues)
+    var keys = Object.keys(NBA_ALL_TIME);
+    if (keys.length === 0) { sug.style.display = 'none'; return; }
     
     var matches = [];
-    for (var i = 0; i < gateAllNames.length && matches.length < 6; i++) {
-      if (gateAllNames[i].toLowerCase().indexOf(val) === 0) matches.push(gateAllNames[i]);
+    // Search through keys directly
+    for (var i = 0; i < keys.length && matches.length < 6; i++) {
+      if (keys[i].indexOf(val) === 0) {
+        // Title case it
+        var tc = keys[i].replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+        matches.push(tc);
+      }
     }
     if (matches.length < 6) {
-      for (var j = 0; j < gateAllNames.length && matches.length < 6; j++) {
-        var low = gateAllNames[j].toLowerCase();
-        if (low.indexOf(val) > 0 && matches.indexOf(gateAllNames[j]) === -1) matches.push(gateAllNames[j]);
+      for (var j = 0; j < keys.length && matches.length < 6; j++) {
+        if (keys[j].indexOf(val) > 0) {
+          var tc2 = keys[j].replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+          if (matches.indexOf(tc2) === -1) matches.push(tc2);
+        }
       }
     }
     
