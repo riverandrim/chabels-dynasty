@@ -46,41 +46,64 @@ function showGate() {
     if (e.key === 'Enter') { sugBox.style.display = 'none'; tryRarity(); }
   });
   
+  // Build name list for autocomplete
+  var gateAllNames = [];
+  if (typeof NBA_ALL_TIME !== 'undefined') {
+    gateAllNames = Object.keys(NBA_ALL_TIME).map(function(k) {
+      return k.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    });
+  }
+  
   // Autocomplete suggestions
-  let allNames = null;
   gateInput.addEventListener('input', function() {
-    const val = this.value.trim().toLowerCase();
-    if (val.length < 2) { sugBox.style.display = 'none'; return; }
+    var val = this.value.trim().toLowerCase();
+    var sug = document.getElementById('gate-suggestions');
+    if (!sug) return;
+    if (val.length < 2 || gateAllNames.length === 0) { sug.style.display = 'none'; return; }
     
-    // Build name list once
-    if (!allNames && typeof NBA_ALL_TIME !== 'undefined') {
-      allNames = Object.keys(NBA_ALL_TIME).map(k => {
-        // Title case the key
-        return k.replace(/\b\w/g, c => c.toUpperCase());
-      });
+    var matches = [];
+    for (var i = 0; i < gateAllNames.length && matches.length < 6; i++) {
+      if (gateAllNames[i].toLowerCase().indexOf(val) === 0) matches.push(gateAllNames[i]);
     }
-    if (!allNames) return;
+    if (matches.length < 6) {
+      for (var j = 0; j < gateAllNames.length && matches.length < 6; j++) {
+        var low = gateAllNames[j].toLowerCase();
+        if (low.indexOf(val) > 0 && matches.indexOf(gateAllNames[j]) === -1) matches.push(gateAllNames[j]);
+      }
+    }
     
-    // Find matches (starts with, then includes)
-    const starts = allNames.filter(n => n.toLowerCase().startsWith(val)).slice(0, 5);
-    const includes = allNames.filter(n => !n.toLowerCase().startsWith(val) && n.toLowerCase().includes(val)).slice(0, 3);
-    const matches = [...starts, ...includes].slice(0, 6);
+    if (matches.length === 0) { sug.style.display = 'none'; return; }
     
-    if (matches.length === 0) { sugBox.style.display = 'none'; return; }
+    sug.style.display = 'block';
+    var html = '';
+    for (var k = 0; k < matches.length; k++) {
+      var m = matches[k];
+      html += '<div style="padding:0.5rem 0.75rem;color:#ccc;font-size:0.9rem;cursor:pointer;text-align:left;border-bottom:1px solid #2a2a2a;" '
+        + 'onmouseover="this.style.background=\'#2a2a2a\'" '
+        + 'onmouseout="this.style.background=\'transparent\'" '
+        + 'ontouchstart="this.style.background=\'#2a2a2a\'" '
+        + 'data-name="' + m.replace(/"/g, '&quot;') + '"'
+        + '>' + m + '</div>';
+    }
+    sug.innerHTML = html;
     
-    sugBox.style.display = 'block';
-    sugBox.innerHTML = matches.map(m => 
-      `<div style="padding:0.5rem 0.75rem;color:#ccc;font-size:0.9rem;cursor:pointer;text-align:left;border-bottom:1px solid #2a2a2a;transition:background 0.15s;" 
-        onmouseover="this.style.background='#2a2a2a'" 
-        onmouseout="this.style.background='transparent'" 
-        onclick="document.getElementById('gate-input').value='${m.replace(/'/g, "\\'")}';
-          document.getElementById('gate-suggestions').style.display='none';">${m}</div>`
-    ).join('');
+    // Add click handlers
+    sug.querySelectorAll('div').forEach(function(el) {
+      el.addEventListener('click', function() {
+        document.getElementById('gate-input').value = this.getAttribute('data-name');
+        document.getElementById('gate-suggestions').style.display = 'none';
+      });
+      el.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        document.getElementById('gate-input').value = this.getAttribute('data-name');
+        document.getElementById('gate-suggestions').style.display = 'none';
+      });
+    });
   });
   
   // Hide suggestions on outside click
   document.addEventListener('click', function(e) {
-    if (e.target !== gateInput) sugBox.style.display = 'none';
+    if (e.target !== gateInput) { var s = document.getElementById('gate-suggestions'); if(s) s.style.display = 'none'; }
   });
 }
 
