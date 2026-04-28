@@ -8,13 +8,7 @@ function normalizeGateName(str) {
 }
 
 function checkGate() {
-  // v3 gate key - clear old keys on upgrade
-  if (!localStorage.getItem('chabels_gate_v3')) {
-    localStorage.removeItem('chabels_gate_passed');
-    localStorage.removeItem('chabels_rarity_gate');
-    localStorage.setItem('chabels_gate_v3', 'reset');
-  }
-  return localStorage.getItem('chabels_rarity_gate') === 'true';
+  return sessionStorage.getItem('chabels_rarity_gate') === 'true';
 }
 
 function showGate() {
@@ -136,9 +130,9 @@ function tryRarity() {
   btn.innerHTML = score >= 50 ? "Enter the League 🏆" : "Try Again (or Enter Anyway)";
   btn.onclick = function() {
     // Always let them in
-    localStorage.setItem('chabels_rarity_gate', 'true');
-    localStorage.setItem('chabels_rarity_score', score);
-    localStorage.setItem('chabels_rarity_player', name);
+    sessionStorage.setItem('chabels_rarity_gate', 'true');
+    sessionStorage.setItem('chabels_rarity_score', score);
+    sessionStorage.setItem('chabels_rarity_player', name);
     const overlay = document.getElementById('gate-overlay');
     overlay.style.transition = 'opacity 0.5s';
     overlay.style.opacity = '0';
