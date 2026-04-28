@@ -103,7 +103,7 @@ function showGate() {
         document.getElementById('gate-suggestions').style.display = 'none';
       });
     });
-  });
+  }
   
   gateInput.addEventListener('input', handleAutocomplete);
   gateInput.addEventListener('keyup', handleAutocomplete);
