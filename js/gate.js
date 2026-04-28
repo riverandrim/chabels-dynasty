@@ -23,7 +23,10 @@ function showGate() {
         <div style="background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:1.25rem;margin-bottom:1rem;">
           <p style="color:#fff;font-size:1rem;font-weight:600;margin-bottom:0.4rem;">Name an NBA Player</p>
           <p style="color:#999;font-size:0.85rem;margin-bottom:1rem;">The more obscure, the better. All-time. Any era.</p>
-          <input type="text" id="gate-input" placeholder="Type a player name..." style="width:100%;background:#0a0a0a;border:2px solid #333;color:#fff;padding:0.75rem 0.75rem;border-radius:8px;font-size:1rem;font-family:inherit;text-align:center;box-sizing:border-box;" autocomplete="off" autocapitalize="words">
+          <div style="position:relative;">
+            <input type="text" id="gate-input" placeholder="Type a player name..." style="width:100%;background:#0a0a0a;border:2px solid #333;color:#fff;padding:0.75rem 0.75rem;border-radius:8px;font-size:1rem;font-family:inherit;text-align:center;box-sizing:border-box;" autocomplete="off" autocapitalize="words">
+            <div id="gate-suggestions" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1a1a1a;border:1px solid #444;border-top:none;border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;z-index:10;"></div>
+          </div>
           <div id="gate-result" style="margin-top:1rem;display:none;"></div>
           <button id="gate-btn" onclick="tryRarity()" style="margin-top:1.25rem;width:100%;padding:0.85rem;background:#d4af37;color:#000;border:none;border-radius:8px;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.3s;">Check Rarity</button>
         </div>
@@ -36,8 +39,48 @@ function showGate() {
   
   setTimeout(() => document.getElementById('gate-input').focus(), 100);
   
-  document.getElementById('gate-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') tryRarity();
+  const gateInput = document.getElementById('gate-input');
+  const sugBox = document.getElementById('gate-suggestions');
+  
+  gateInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') { sugBox.style.display = 'none'; tryRarity(); }
+  });
+  
+  // Autocomplete suggestions
+  let allNames = null;
+  gateInput.addEventListener('input', function() {
+    const val = this.value.trim().toLowerCase();
+    if (val.length < 2) { sugBox.style.display = 'none'; return; }
+    
+    // Build name list once
+    if (!allNames && typeof NBA_ALL_TIME !== 'undefined') {
+      allNames = Object.keys(NBA_ALL_TIME).map(k => {
+        // Title case the key
+        return k.replace(/\b\w/g, c => c.toUpperCase());
+      });
+    }
+    if (!allNames) return;
+    
+    // Find matches (starts with, then includes)
+    const starts = allNames.filter(n => n.toLowerCase().startsWith(val)).slice(0, 5);
+    const includes = allNames.filter(n => !n.toLowerCase().startsWith(val) && n.toLowerCase().includes(val)).slice(0, 3);
+    const matches = [...starts, ...includes].slice(0, 6);
+    
+    if (matches.length === 0) { sugBox.style.display = 'none'; return; }
+    
+    sugBox.style.display = 'block';
+    sugBox.innerHTML = matches.map(m => 
+      `<div style="padding:0.5rem 0.75rem;color:#ccc;font-size:0.9rem;cursor:pointer;text-align:left;border-bottom:1px solid #2a2a2a;transition:background 0.15s;" 
+        onmouseover="this.style.background='#2a2a2a'" 
+        onmouseout="this.style.background='transparent'" 
+        onclick="document.getElementById('gate-input').value='${m.replace(/'/g, "\\'")}';
+          document.getElementById('gate-suggestions').style.display='none';">${m}</div>`
+    ).join('');
+  });
+  
+  // Hide suggestions on outside click
+  document.addEventListener('click', function(e) {
+    if (e.target !== gateInput) sugBox.style.display = 'none';
   });
 }
 
