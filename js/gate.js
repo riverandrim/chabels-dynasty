@@ -8,7 +8,7 @@ function normalizeGateName(str) {
 }
 
 function checkGate() {
-  return false;
+  return sessionStorage.getItem('chabels_rarity_gate') === 'true';
 }
 
 function showGate() {
