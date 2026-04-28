@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chabels Dynasty League</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">CHABELS<span class="sub">Dynasty League</span></a>
+    <div class="nav-toggle"><span></span><span></span><span></span></div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="teams.html">Teams</a>
+      <a href="draft.html">Draft</a>
+      <a href="analytics.html#analyzer">Trade Analyzer</a>
+      <div class="nav-dropdown">
+        <span class="nav-dropdown-toggle">Analytics &#9660;</span>
+        <div class="nav-dropdown-menu">
+          <a href="rankings.html">Power Rankings</a>
+          <a href="trades.html">Trade History</a>
+          <a href="analytics.html#contribution">Player Contribution</a>
+          <a href="analytics.html#age">Roster Age</a>
+          <a href="awards.html">Awards</a>
+          <a href="history.html">History</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-motto">Rebound &bull; Execute &bull; Defend</div>
+    <h1><span class="gold">CHABELS</span> DYNASTY</h1>
+    <p class="hero-subtitle">The definitive dynasty fantasy basketball league. Real-time data. Custom scoring. Championship legacy.</p>
+  </section>
+
+  <!-- Standings -->
+  <section class="section">
+    <h2 class="section-title">Current Standings</h2>
+    <div class="gold-line"></div>
+    <div id="standings"><div class="loading">Loading standings</div></div>
+  </section>
+
+  <!-- Matchups -->
+  <section class="section">
+    <h2 class="section-title">This Week's Matchups</h2>
+    <div class="gold-line"></div>
+    <div id="matchups"><div class="loading">Loading matchups</div></div>
+  </section>
+
+  <!-- Scoring System -->
+  <section class="section">
+    <h2 class="section-title">Scoring System</h2>
+    <div class="gold-line"></div>
+    <p class="section-sub">Our custom scoring rewards defense, efficiency, and playmaking.</p>
+
+    <div class="scoring-grid">
+      <div class="scoring-item"><span class="label">Points</span><span class="value">1 pt</span></div>
+      <div class="scoring-item"><span class="label">Rebounds</span><span class="value">1 pt</span></div>
+      <div class="scoring-item elite"><span class="label">Assists</span><span class="value">2 pts ⭐</span></div>
+      <div class="scoring-item elite"><span class="label">Steals</span><span class="value">4 pts ⭐⭐</span></div>
+      <div class="scoring-item elite"><span class="label">Blocks</span><span class="value">4 pts ⭐⭐</span></div>
+      <div class="scoring-item"><span class="label">Turnovers</span><span class="value">-2 pts</span></div>
+      <div class="scoring-item"><span class="label">FG Made</span><span class="value">+2 pts</span></div>
+      <div class="scoring-item"><span class="label">FG Attempted</span><span class="value">-1 pt</span></div>
+      <div class="scoring-item"><span class="label">FT Made</span><span class="value">+1 pt</span></div>
+      <div class="scoring-item"><span class="label">FT Attempted</span><span class="value">-1 pt</span></div>
+      <div class="scoring-item"><span class="label">3PM</span><span class="value">+1 pt</span></div>
+      <div class="scoring-item"><span class="label">Offensive Reb</span><span class="value">+0.5 pt</span></div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <div class="scoring-grid">
+        <div class="scoring-item elite"><span class="label">Double-Double</span><span class="value">+5 pts</span></div>
+        <div class="scoring-item elite"><span class="label">Triple-Double</span><span class="value">+10 pts</span></div>
+        <div class="scoring-item"><span class="label">40+ Pt Game</span><span class="value">+5 pts</span></div>
+        <div class="scoring-item"><span class="label">50+ Pt Game</span><span class="value">+10 pts</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transactions -->
+  <section class="section">
+    <h2 class="section-title">Recent Transactions</h2>
+    <div class="gold-line"></div>
+    <div id="transactions"><div class="loading">Loading transactions</div></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p><span class="gold">CHABELS DYNASTY LEAGUE</span> &mdash; Rebound &bull; Execute &bull; Defend</p>
+  </footer>
+
+  <script src="js/nba-alltime.js"></script>
+<script src="js/gate.js"></script>
+<script src="js/sleeper.js"></script>
+  <script>
+    renderStandings('standings');
+    renderMatchups('matchups');
+    renderTransactions('transactions');
+  </script>
+</body>
+</html>
