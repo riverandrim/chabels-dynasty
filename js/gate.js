@@ -15,19 +15,19 @@ function showGate() {
   const overlay = document.createElement('div');
   overlay.id = 'gate-overlay';
   overlay.innerHTML = `
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;padding:2rem;">
-      <div style="max-width:500px;width:100%;text-align:center;">
-        <div style="font-size:3rem;margin-bottom:1rem;">🏀</div>
-        <h1 style="font-size:2rem;font-weight:700;color:#d4af37;letter-spacing:2px;margin-bottom:0.5rem;">CHABELS DYNASTY</h1>
-        <p style="color:#999;font-size:0.85rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:2rem;">Rebound &bull; Execute &bull; Defend</p>
-        <div style="background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:2rem;margin-bottom:1.5rem;">
-          <p style="color:#fff;font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;">Name an NBA Player</p>
-          <p style="color:#999;font-size:0.9rem;margin-bottom:1.5rem;">The more obscure, the better. All-time. Any era.</p>
-          <input type="text" id="gate-input" placeholder="Type a player name..." style="width:100%;background:#0a0a0a;border:2px solid #333;color:#fff;padding:0.85rem 1rem;border-radius:8px;font-size:1.1rem;font-family:inherit;text-align:center;" autocomplete="off">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;padding:1rem;">
+      <div style="max-width:440px;width:100%;text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem;">🏀</div>
+        <h1 style="font-size:clamp(1.4rem,5vw,2rem);font-weight:700;color:#d4af37;letter-spacing:2px;margin-bottom:0.4rem;">CHABELS DYNASTY</h1>
+        <p style="color:#999;font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:1.5rem;">Rebound &bull; Execute &bull; Defend</p>
+        <div style="background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:1.25rem;margin-bottom:1rem;">
+          <p style="color:#fff;font-size:1rem;font-weight:600;margin-bottom:0.4rem;">Name an NBA Player</p>
+          <p style="color:#999;font-size:0.85rem;margin-bottom:1rem;">The more obscure, the better. All-time. Any era.</p>
+          <input type="text" id="gate-input" placeholder="Type a player name..." style="width:100%;background:#0a0a0a;border:2px solid #333;color:#fff;padding:0.75rem 0.75rem;border-radius:8px;font-size:1rem;font-family:inherit;text-align:center;box-sizing:border-box;" autocomplete="off" autocapitalize="words">
           <div id="gate-result" style="margin-top:1rem;display:none;"></div>
           <button id="gate-btn" onclick="tryRarity()" style="margin-top:1.25rem;width:100%;padding:0.85rem;background:#d4af37;color:#000;border:none;border-radius:8px;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.3s;">Check Rarity</button>
         </div>
-        <p style="color:#555;font-size:0.75rem;">5,000+ NBA players in the database. Can you find a 90+?</p>
+        <p style="color:#555;font-size:0.7rem;">5,000+ NBA players in the database. Can you find a 90+?</p>
       </div>
     </div>
   `;
@@ -140,7 +140,7 @@ function tryRarity() {
 function showGrandEntrance() {
   const overlay = document.getElementById('gate-overlay');
   overlay.innerHTML = `
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;padding:1rem;">
       <div style="text-align:center;position:relative;">
         <style>
           @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
@@ -164,10 +164,10 @@ function showGrandEntrance() {
           .entrance-title-text { animation: goldPulse 2s ease-in-out 1.2s infinite; }
         </style>
         
-        <div class="entrance-trophy">🏀</div>
+        <div class="entrance-trophy" style="line-height:1;">🏀</div>
         
         <div class="entrance-title" style="margin:1rem 0 0.25rem;">
-          <h1 class="entrance-title-text" style="font-size:clamp(2.5rem,6vw,4rem);font-weight:700;color:#d4af37;letter-spacing:3px;">CHABELS DYNASTY</h1>
+          <h1 class="entrance-title-text" style="font-size:clamp(1.8rem,6vw,3.5rem);font-weight:700;color:#d4af37;letter-spacing:2px;">CHABELS DYNASTY</h1>
         </div>
         
         <div class="entrance-motto">
@@ -178,38 +178,38 @@ function showGrandEntrance() {
           <div class="entrance-line" style="height:2px;background:linear-gradient(90deg,transparent,#d4af37,transparent);"></div>
         </div>
         
-        <div class="entrance-stats" style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:1.5rem 0;">
-          <div class="entrance-stat" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#d4af37;">10</div>
-            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Teams</div>
+        <div class="entrance-stats" style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin:1.25rem 0;">
+          <div class="entrance-stat" style="text-align:center;min-width:60px;">
+            <div style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:#d4af37;">10</div>
+            <div style="font-size:0.6rem;color:#666;text-transform:uppercase;letter-spacing:1px;">Teams</div>
           </div>
-          <div class="entrance-stat" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#d4af37;">3</div>
-            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Seasons</div>
+          <div class="entrance-stat" style="text-align:center;min-width:60px;">
+            <div style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:#d4af37;">3</div>
+            <div style="font-size:0.6rem;color:#666;text-transform:uppercase;letter-spacing:1px;">Seasons</div>
           </div>
-          <div class="entrance-stat" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#d4af37;">3</div>
-            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Champions</div>
+          <div class="entrance-stat" style="text-align:center;min-width:60px;">
+            <div style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:#d4af37;">3</div>
+            <div style="font-size:0.6rem;color:#666;text-transform:uppercase;letter-spacing:1px;">Champs</div>
           </div>
-          <div class="entrance-stat" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#d4af37;">0</div>
-            <div style="font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:2px;">Repeats</div>
+          <div class="entrance-stat" style="text-align:center;min-width:60px;">
+            <div style="font-size:clamp(1.5rem,4vw,2rem);font-weight:700;color:#d4af37;">0</div>
+            <div style="font-size:0.6rem;color:#666;text-transform:uppercase;letter-spacing:1px;">Repeats</div>
           </div>
         </div>
         
         <div class="entrance-champs">
-          <div style="display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin:1rem 0;">
-            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;">
-              <div style="font-size:0.65rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2023-24</div>
-              <div style="color:#d4af37;font-weight:700;font-size:0.95rem;">🏆 Christian/Mitch</div>
+          <div style="display:flex;justify-content:center;gap:0.75rem;flex-wrap:wrap;margin:0.75rem 0;">
+            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.5rem 0.8rem;text-align:center;flex:1;min-width:90px;max-width:150px;">
+              <div style="font-size:0.55rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2023-24</div>
+              <div style="color:#d4af37;font-weight:700;font-size:clamp(0.75rem,2.5vw,0.9rem);">🏆 Chris/Mitch</div>
             </div>
-            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;">
-              <div style="font-size:0.65rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2024-25</div>
-              <div style="color:#d4af37;font-weight:700;font-size:0.95rem;">🏆 Nolan</div>
+            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.5rem 0.8rem;text-align:center;flex:1;min-width:90px;max-width:150px;">
+              <div style="font-size:0.55rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2024-25</div>
+              <div style="color:#d4af37;font-weight:700;font-size:clamp(0.75rem,2.5vw,0.9rem);">🏆 Nolan</div>
             </div>
-            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;">
-              <div style="font-size:0.65rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2025-26</div>
-              <div style="color:#d4af37;font-weight:700;font-size:0.95rem;">🏆 Logan</div>
+            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:0.5rem 0.8rem;text-align:center;flex:1;min-width:90px;max-width:150px;">
+              <div style="font-size:0.55rem;color:#666;text-transform:uppercase;letter-spacing:1px;">2025-26</div>
+              <div style="color:#d4af37;font-weight:700;font-size:clamp(0.75rem,2.5vw,0.9rem);">🏆 Logan</div>
             </div>
           </div>
           <p style="color:#555;font-size:0.8rem;margin-top:0.75rem;font-style:italic;">Three seasons. Three champions. No dynasty... yet.</p>
