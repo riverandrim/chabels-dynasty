@@ -693,13 +693,12 @@ async function renderThreeTierRankings() {
   const BASE = 'https://api.sleeper.app/v1';
   const LEAGUE_ID = '1221920986723528704';
 
-  let rosters, users, allPlayers, tradedPicks;
+  let rosters, users, allPlayers;
   try {
-    [rosters, users, allPlayers, tradedPicks] = await Promise.all([
+    [rosters, users, allPlayers] = await Promise.all([
       fetch(`${BASE}/league/${LEAGUE_ID}/rosters`).then(r => r.json()),
       fetch(`${BASE}/league/${LEAGUE_ID}/users`).then(r => r.json()),
-      fetch(`${BASE}/players/nba`).then(r => r.json()),
-      fetch(`${BASE}/league/${LEAGUE_ID}/traded_picks`).then(r => r.json())
+      fetch(`${BASE}/players/nba`).then(r => r.json())
     ]);
   } catch (e) {
     Object.values(containers).forEach(el => {
@@ -707,9 +706,6 @@ async function renderThreeTierRankings() {
     });
     return;
   }
-
-  // Build draft pick inventory
-  const { inventory: pickInventory, teamRecords } = buildPickInventory(rosters, tradedPicks || []);
 
   // Owner name map (real names)
   const ownerNames = {
@@ -772,10 +768,24 @@ async function renderThreeTierRankings() {
   }
 
   // Calculate scores for each window
+  // Power score = blend of two CURRENT-ROSTER signals only (no draft capital, no history):
+  //   1. Depth value  — age-adjusted sum of every ranked player (rewards depth + youth)
+  //   2. Top-15 talent — average dynasty rank of each team's 15 best players (pure talent)
+  // Both are normalized 0-100 across the league each render, then blended 50/50.
   ['1yr', '5yr', '10yr'].forEach(window => {
-    const scored = teams.map(t => {
-      let playerValue = 0;
+    // Blend weights per window: win-now leans on top-15 talent,
+    // longer windows lean a bit more on age-adjusted depth/youth.
+    const blendWeights = {
+      '1yr':  { depth: 0.45, top15: 0.55 },
+      '5yr':  { depth: 0.50, top15: 0.50 },
+      '10yr': { depth: 0.55, top15: 0.45 }
+    }[window];
+
+    // Pass 1: compute raw component values per team
+    const pre = teams.map(t => {
+      let depthValue = 0;
       let topPlayers = [];
+      let rankedRanks = [];
 
       t.playerNames.forEach(pName => {
         const dynMatch = findDynastyRank(pName);
@@ -783,47 +793,42 @@ async function renderThreeTierRankings() {
           const baseVal = rankToValue(dynMatch.rank);
           const mult = ageMultiplier(dynMatch.age, window);
           const val = baseVal * mult;
-          playerValue += val;
-          topPlayers.push({ name: dynMatch.name, rank: dynMatch.rank, age: dynMatch.age, value: val.toFixed(1) });
+          depthValue += val;
+          rankedRanks.push(dynMatch.rank);
+          topPlayers.push({ name: dynMatch.name, rank: dynMatch.rank, age: dynMatch.age, value: val });
         }
       });
 
       topPlayers.sort((a, b) => b.value - a.value);
 
-      // Draft capital
-      const picks = pickInventory[t.roster_id] || [];
-      const draftCapital = calcDraftCapitalValue(picks, teamRecords, window);
+      // Top-15 average dynasty rank (lower = better). Fall back to whatever is
+      // available if a roster somehow has fewer than 15 ranked players.
+      const best15 = rankedRanks.slice().sort((a, b) => a - b).slice(0, 15);
+      const avgTop15 = best15.length ? (best15.reduce((s, r) => s + r, 0) / best15.length) : 460;
 
-      // Historical performance
-      const hist = calcHistoricalScore(t.roster_id);
-      const histWeights = { '1yr': 0.35, '5yr': 0.20, '10yr': 0.10 };
-      const playerWeights = { '1yr': 0.50, '5yr': 0.40, '10yr': 0.30 };
-      const pickWeights = { '1yr': 0.15, '5yr': 0.25, '10yr': 0.35 };
-      // Normalize: scale historical to be comparable
-      const histValue = hist.score * 3; // scale up to match player/pick ranges
+      return { ...t, depthValue, avgTop15, topPlayers };
+    });
 
-      const rawTotal = playerValue + draftCapital.total + histValue;
-      // Weighted blend
-      const totalPlayerPct = playerValue / (rawTotal || 1);
-      const totalPickPct = draftCapital.total / (rawTotal || 1);
-      const totalHistPct = histValue / (rawTotal || 1);
-      const weightedScore = (playerValue * playerWeights[window] / (totalPlayerPct || 0.33))
-        + (draftCapital.total * pickWeights[window] / (totalPickPct || 0.33))
-        + (histValue * histWeights[window] / (totalHistPct || 0.33));
-      // Simpler: just weight the components directly
-      const powerScore = (playerValue * (playerWeights[window] / 0.5))
-        + (draftCapital.total * (pickWeights[window] / 0.15))
-        + (histValue * (histWeights[window] / 0.35));
+    // Pass 2: normalize each component 0-100 across the league, then blend
+    const depthVals = pre.map(t => t.depthValue);
+    const maxDepth = Math.max(...depthVals);
+    const minDepth = Math.min(...depthVals);
+    const avgVals = pre.map(t => t.avgTop15);
+    const bestAvg = Math.min(...avgVals);  // lowest avg rank = best
+    const worstAvg = Math.max(...avgVals);
 
+    const norm = (v, lo, hi) => (hi > lo ? (v - lo) / (hi - lo) : 1);
+
+    const scored = pre.map(t => {
+      const depthScore = norm(t.depthValue, minDepth, maxDepth) * 100;         // higher raw = higher
+      const talentScore = (1 - norm(t.avgTop15, bestAvg, worstAvg)) * 100;     // lower avg = higher
+      const powerScore = depthScore * blendWeights.depth + talentScore * blendWeights.top15;
       return {
         ...t,
-        playerValue: playerValue,
-        draftValue: draftCapital.total,
-        histValue: histValue,
-        hist: hist,
-        powerScore: powerScore,
-        topPlayers: topPlayers.slice(0, 10),
-        topPicks: draftCapital.details.slice(0, 4)
+        depthScore,
+        talentScore,
+        powerScore,
+        topPlayers: t.topPlayers.slice(0, 10)
       };
     });
 
@@ -832,32 +837,20 @@ async function renderThreeTierRankings() {
     const container = containers[window];
     if (!container) return;
 
-    // Build roster name map for pick display
-    const rosterNames = {};
-    teams.forEach(tm => { rosterNames[tm.roster_id] = tm.name; });
-
     let html = '';
     scored.forEach((t, i) => {
       const topList = t.topPlayers.map(p =>
         `<span style="display:inline-block;background:rgba(212,175,55,0.1);padding:2px 8px;border-radius:4px;margin:2px;font-size:0.8rem;"><strong>${p.name}</strong> <span style="color:var(--gold);">#${p.rank}</span></span>`
       ).join(' ');
 
-      const pickList = t.topPicks.length ? t.topPicks.map(p => {
-        const origName = rosterNames[p.originalTeam] || ('Team ' + p.originalTeam);
-        const ownerNote = origName !== t.name ? ` (${origName}'s pick)` : ' (own)';
-        return `<span style="display:inline-block;background:rgba(100,200,100,0.1);border:1px solid rgba(100,200,100,0.2);padding:2px 8px;border-radius:4px;margin:2px;font-size:0.75rem;color:#7ddf7d;">🎯 ${p.label}${ownerNote}</span>`;
-      }).join(' ') : '';
-
       const cardId = `card-${window}-${i}`;
-      const chipBadge = t.hist.chips ? '🏆' : '';
-      const trendIcon = t.hist.trend === 'rising' ? '📈' : t.hist.trend === 'falling' ? '📉' : '➡️';
 
       html += `<div class="pr-card" style="cursor:pointer;padding:0;" onclick="document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'none' ? 'block' : 'none'; this.querySelector('.expand-icon').textContent = document.getElementById('${cardId}').style.display === 'none' ? '▶' : '▼';">
         <div style="display:flex;align-items:center;gap:1rem;padding:1.25rem 2rem;">
           <div class="pr-rank" style="font-size:2rem;">${i + 1}</div>
           <div style="flex:1;">
-            <h3 style="margin-bottom:0.15rem;">${t.name} ${chipBadge}</h3>
-            <span style="color:var(--gray-text);font-size:0.85rem;">${t.hist.careerW}-${t.hist.careerL} career (${(t.hist.winPct*100).toFixed(0)}%) ${trendIcon}</span>
+            <h3 style="margin-bottom:0.15rem;">${t.name}</h3>
+            <span style="color:var(--gray-text);font-size:0.85rem;">Top-15 avg rank: ${t.avgTop15.toFixed(1)}</span>
           </div>
           <div style="text-align:right;">
             <div style="color:var(--gold);font-weight:700;font-size:1.2rem;">${t.powerScore.toFixed(1)}</div>
@@ -866,9 +859,8 @@ async function renderThreeTierRankings() {
           <span class="expand-icon" style="color:var(--gray-text);font-size:0.8rem;margin-left:0.5rem;">▶</span>
         </div>
         <div id="${cardId}" style="display:none;padding:0 2rem 1.25rem;border-top:1px solid rgba(255,255,255,0.05);">
-          <p style="font-size:0.8rem;color:#888;margin:0.75rem 0 0.5rem;">Players: ${t.playerValue.toFixed(1)} + Picks: ${t.draftValue.toFixed(1)} + History: ${t.histValue.toFixed(1)}</p>
+          <p style="font-size:0.8rem;color:#888;margin:0.75rem 0 0.5rem;">Talent (Top-15): ${t.talentScore.toFixed(0)}/100 &nbsp;•&nbsp; Depth (age-adj): ${t.depthScore.toFixed(0)}/100</p>
           <div style="margin-bottom:0.5rem;">${topList || '<span style="color:#666;">No ranked players found</span>'}</div>
-          ${pickList ? '<div>' + pickList + '</div>' : ''}
         </div>
       </div>`;
     });
