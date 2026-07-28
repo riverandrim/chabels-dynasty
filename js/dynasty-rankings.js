@@ -767,19 +767,18 @@ async function renderThreeTierRankings() {
     return match || null;
   }
 
-  // Calculate scores for each window
-  // Power score = blend of two CURRENT-ROSTER signals only (no draft capital, no history):
-  //   1. Depth value  — age-adjusted sum of every ranked player (rewards depth + youth)
-  //   2. Top-15 talent — average dynasty rank of each team's 15 best players (pure talent)
-  // Both are normalized 0-100 across the league each render, then blended 50/50.
-  ['1yr', '5yr', '10yr'].forEach(window => {
-    // Blend weights per window: win-now leans on top-15 talent,
-    // longer windows lean a bit more on age-adjusted depth/youth.
-    const blendWeights = {
-      '1yr':  { depth: 0.45, top15: 0.55 },
-      '5yr':  { depth: 0.50, top15: 0.50 },
-      '10yr': { depth: 0.55, top15: 0.45 }
-    }[window];
+  const blendWeightsByWindow = {
+    '1yr':  { depth: 0.45, top15: 0.55 },
+    '5yr':  { depth: 0.50, top15: 0.50 },
+    '10yr': { depth: 0.55, top15: 0.45 }
+  };
+
+  function teamKey(team) {
+    return String(team.roster_id || team.name);
+  }
+
+  function buildWindowScores(window) {
+    const blendWeights = blendWeightsByWindow[window];
 
     // Pass 1: compute raw component values per team
     const pre = teams.map(t => {
@@ -805,8 +804,12 @@ async function renderThreeTierRankings() {
       // available if a roster somehow has fewer than 15 ranked players.
       const best15 = rankedRanks.slice().sort((a, b) => a - b).slice(0, 15);
       const avgTop15 = best15.length ? (best15.reduce((s, r) => s + r, 0) / best15.length) : 460;
+      const top100Count = rankedRanks.filter(r => r <= 100).length;
+      const youngCoreCount = topPlayers.filter(p => p.age < 25 && p.rank <= 150).length;
+      const winNowCount = topPlayers.filter(p => p.age >= 30 && p.rank <= 120).length;
+      const eliteCount = rankedRanks.filter(r => r <= 30).length;
 
-      return { ...t, depthValue, avgTop15, topPlayers };
+      return { ...t, depthValue, avgTop15, topPlayers, top100Count, youngCoreCount, winNowCount, eliteCount };
     });
 
     // Pass 2: normalize each component 0-100 across the league, then blend
@@ -832,35 +835,106 @@ async function renderThreeTierRankings() {
       };
     });
 
-    scored.sort((a, b) => b.powerScore - a.powerScore);
+    return scored.sort((a, b) => b.powerScore - a.powerScore);
+  }
 
+  function getRankMovement(t, window, ranksByTeam) {
+    const ranks = ranksByTeam[teamKey(t)] || {};
+    if (window === '1yr') {
+      const tenYearRank = ranks['10yr'];
+      if (!tenYearRank || tenYearRank === ranks['1yr']) return { label: 'Same long-term slot', cls: 'neutral' };
+      const delta = tenYearRank - ranks['1yr'];
+      return delta > 0
+        ? { label: `${delta} spot${delta === 1 ? '' : 's'} lower in 10Y`, cls: 'down' }
+        : { label: `${Math.abs(delta)} spot${Math.abs(delta) === 1 ? '' : 's'} higher in 10Y`, cls: 'up' };
+    }
+
+    const oneYearRank = ranks['1yr'];
+    if (!oneYearRank || oneYearRank === ranks[window]) return { label: 'No window movement', cls: 'neutral' };
+    const delta = oneYearRank - ranks[window];
+    return delta > 0
+      ? { label: `${delta} spot${delta === 1 ? '' : 's'} up vs win-now`, cls: 'up' }
+      : { label: `${Math.abs(delta)} spot${Math.abs(delta) === 1 ? '' : 's'} down vs win-now`, cls: 'down' };
+  }
+
+  function getTeamVerdict(t, window) {
+    const lead = t.topPlayers[0] ? `${t.topPlayers[0].name} anchors it` : 'No ranked anchor found';
+    if (window === '1yr') {
+      if (t.talentScore >= 75 && t.depthScore >= 70) return `Real title profile. ${lead}, and the depth is strong enough to survive a normal bad week.`;
+      if (t.talentScore >= 70) return `Star-driven contender. ${lead}, but depth is the pressure point.`;
+      if (t.depthScore >= 70) return `Deep roster, lighter on nuclear top-end talent. Needs the whole group to hit.`;
+      return `Needs either a star jump or a consolidation trade before it looks scary next season.`;
+    }
+    if (window === '5yr') {
+      if (t.youngCoreCount >= 6 && t.top100Count >= 7) return `Clean dynasty core. ${lead}, with enough young top-150 assets to age well.`;
+      if (t.top100Count >= 8) return `Good five-year build, though some of the value is already in its prime.`;
+      if (t.youngCoreCount >= 5) return `Future-leaning roster. The upside is real, but the proven top-end is thinner.`;
+      return `Middle-window value is fragile unless a few younger pieces make a leap.`;
+    }
+    if (t.youngCoreCount >= 7) return `Long-term runway. The roster has multiple young pieces that still gain value in this window.`;
+    if (t.eliteCount >= 2 && t.youngCoreCount >= 4) return `Still dangerous long-term because the elite talent is young enough to matter.`;
+    if (t.winNowCount >= 4) return `Win-now roster fades here. Veterans help today, but the 10-year lens punishes them hard.`;
+    return `Long-term profile needs more youth or premium upside to climb.`;
+  }
+
+  const scoredByWindow = {};
+  ['1yr', '5yr', '10yr'].forEach(window => {
+    scoredByWindow[window] = buildWindowScores(window);
+  });
+
+  const ranksByTeam = {};
+  Object.entries(scoredByWindow).forEach(([window, scored]) => {
+    scored.forEach((team, index) => {
+      const key = teamKey(team);
+      if (!ranksByTeam[key]) ranksByTeam[key] = {};
+      ranksByTeam[key][window] = index + 1;
+    });
+  });
+
+  // Power score = blend of two CURRENT-ROSTER signals only (no draft capital, no history):
+  //   1. Depth value  — age-adjusted sum of every ranked player (rewards depth + youth)
+  //   2. Top-15 talent — average dynasty rank of each team's 15 best players (pure talent)
+  // Both are normalized 0-100 across the league each render, then blended by window.
+  ['1yr', '5yr', '10yr'].forEach(window => {
+    const scored = scoredByWindow[window];
     const container = containers[window];
     if (!container) return;
 
     let html = '';
     scored.forEach((t, i) => {
       const topList = t.topPlayers.map(p =>
-        `<span style="display:inline-block;background:rgba(212,175,55,0.1);padding:2px 8px;border-radius:4px;margin:2px;font-size:0.8rem;"><strong>${p.name}</strong> <span style="color:var(--gold);">#${p.rank}</span></span>`
+        `<span class="player-pill"><strong>${p.name}</strong> <span>#${p.rank}</span></span>`
       ).join(' ');
+      const movement = getRankMovement(t, window, ranksByTeam);
+      const verdict = getTeamVerdict(t, window);
 
       const cardId = `card-${window}-${i}`;
 
-      html += `<div class="pr-card" style="cursor:pointer;padding:0;" onclick="document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'none' ? 'block' : 'none'; this.querySelector('.expand-icon').textContent = document.getElementById('${cardId}').style.display === 'none' ? '▶' : '▼';">
-        <div style="display:flex;align-items:center;gap:1rem;padding:1.25rem 2rem;">
-          <div class="pr-rank" style="font-size:2rem;">${i + 1}</div>
-          <div style="flex:1;">
-            <h3 style="margin-bottom:0.15rem;">${t.name}</h3>
-            <span style="color:var(--gray-text);font-size:0.85rem;">Top-15 avg rank: ${t.avgTop15.toFixed(1)}</span>
+      html += `<div class="pr-card pr-card--ranking" onclick="document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'none' ? 'block' : 'none'; this.querySelector('.expand-icon').textContent = document.getElementById('${cardId}').style.display === 'none' ? '▶' : '▼';">
+        <div class="pr-card-main">
+          <div class="pr-rank">${i + 1}</div>
+          <div class="pr-team">
+            <div class="pr-team-title">
+              <h3>${t.name}</h3>
+              <span class="movement-badge ${movement.cls}">${movement.label}</span>
+            </div>
+            <p>${verdict}</p>
           </div>
-          <div style="text-align:right;">
-            <div style="color:var(--gold);font-weight:700;font-size:1.2rem;">${t.powerScore.toFixed(1)}</div>
-            <div style="color:var(--gray-text);font-size:0.7rem;">Power Score</div>
+          <div class="pr-score">
+            <div>${t.powerScore.toFixed(1)}</div>
+            <span>Power Score</span>
           </div>
-          <span class="expand-icon" style="color:var(--gray-text);font-size:0.8rem;margin-left:0.5rem;">▶</span>
+          <span class="expand-icon">▶</span>
         </div>
-        <div id="${cardId}" style="display:none;padding:0 2rem 1.25rem;border-top:1px solid rgba(255,255,255,0.05);">
-          <p style="font-size:0.8rem;color:#888;margin:0.75rem 0 0.5rem;">Talent (Top-15): ${t.talentScore.toFixed(0)}/100 &nbsp;•&nbsp; Depth (age-adj): ${t.depthScore.toFixed(0)}/100</p>
-          <div style="margin-bottom:0.5rem;">${topList || '<span style="color:#666;">No ranked players found</span>'}</div>
+        <div id="${cardId}" class="pr-card-detail">
+          <div class="signal-grid">
+            <div><span>Top-15 Avg</span><strong>${t.avgTop15.toFixed(1)}</strong></div>
+            <div><span>Talent</span><strong>${t.talentScore.toFixed(0)}/100</strong></div>
+            <div><span>Depth</span><strong>${t.depthScore.toFixed(0)}/100</strong></div>
+            <div><span>Top 100</span><strong>${t.top100Count}</strong></div>
+            <div><span>Young Core</span><strong>${t.youngCoreCount}</strong></div>
+          </div>
+          <div class="player-pill-row">${topList || '<span style="color:#666;">No ranked players found</span>'}</div>
         </div>
       </div>`;
     });

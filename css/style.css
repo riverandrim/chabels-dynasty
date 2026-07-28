@@ -432,6 +432,151 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 
+.pr-card--ranking {
+  cursor: pointer;
+  display: block;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.pr-card-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+}
+
+.pr-team {
+  flex: 1;
+  min-width: 0;
+}
+
+.pr-team-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.2rem;
+}
+
+.pr-team-title h3 {
+  margin: 0;
+}
+
+.pr-team p {
+  color: var(--gray-text);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.movement-badge {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  color: var(--gray-text);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 0.18rem 0.55rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.movement-badge.up {
+  background: rgba(68,204,68,0.09);
+  border-color: rgba(68,204,68,0.28);
+  color: #8ee08e;
+}
+
+.movement-badge.down {
+  background: rgba(255,68,68,0.08);
+  border-color: rgba(255,68,68,0.25);
+  color: #ff9a9a;
+}
+
+.movement-badge.neutral {
+  background: rgba(255,255,255,0.04);
+}
+
+.pr-score {
+  min-width: 88px;
+  text-align: right;
+}
+
+.pr-score div {
+  color: var(--gold);
+  font-size: 1.22rem;
+  font-weight: 800;
+}
+
+.pr-score span {
+  color: var(--gray-text);
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.expand-icon {
+  color: var(--gray-text);
+  font-size: 0.8rem;
+  margin-left: 0.25rem;
+}
+
+.pr-card-detail {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: none;
+  padding: 1rem 2rem 1.35rem;
+}
+
+.signal-grid {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 0.85rem;
+}
+
+.signal-grid div {
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.signal-grid span {
+  color: var(--gray-text);
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.signal-grid strong {
+  color: var(--white);
+  display: block;
+  font-size: 1rem;
+  margin-top: 0.15rem;
+}
+
+.player-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.player-pill {
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.13);
+  border-radius: 5px;
+  color: var(--text-body);
+  display: inline-block;
+  font-size: 0.8rem;
+  padding: 0.18rem 0.5rem;
+}
+
+.player-pill span {
+  color: var(--gold);
+}
+
 .pr-info h3 {
   font-size: 1.2rem;
   font-weight: 700;
@@ -709,6 +854,8 @@ img { max-width: 100%; display: block; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 768px) {
+  html, body { overflow-x: hidden; }
+
   .nav-links {
     display: none;
     position: absolute;
@@ -755,7 +902,28 @@ img { max-width: 100%; display: block; }
     font-size: 0.8rem;
   }
 
-  .card-grid { grid-template-columns: 1fr; }
+  .page-header { padding: 7rem 1rem 2.5rem; }
+  .page-header h1 {
+    font-size: 1.8rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+  .page-header p { font-size: 0.9rem; }
+  .section { padding: 2.25rem 1rem; }
+  .section-sub { overflow-wrap: anywhere; }
+  .section > div[onclick] {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .section-title {
+    font-size: 1.35rem;
+    line-height: 1.25;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .card-grid { grid-template-columns: 1fr !important; }
 
   .matchup-card {
     flex-direction: column;
@@ -765,7 +933,34 @@ img { max-width: 100%; display: block; }
   .matchup-team.right { text-align: center; }
 
   .pr-card { flex-direction: column; text-align: center; }
-  .pr-rank { font-size: 2rem; }
+  .pr-card-main {
+    align-items: flex-start;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 46px minmax(0, 1fr);
+    padding: 1rem;
+    text-align: left;
+  }
+  .pr-team-title { gap: 0.45rem; }
+  .pr-team p { font-size: 0.8rem; }
+  .pr-score {
+    grid-column: 2;
+    min-width: 0;
+    text-align: left;
+  }
+  .pr-score div { font-size: 1rem; }
+  .pr-score span { font-size: 0.62rem; }
+  .expand-icon {
+    position: absolute;
+    right: 1rem;
+    top: 1.05rem;
+  }
+  .pr-card-detail { padding: 0.85rem 1rem 1rem; }
+  .signal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pr-rank {
+    font-size: 2rem;
+    min-width: 46px;
+  }
 
   .prospect-header { flex-wrap: wrap; }
   .prospect-grade { margin-left: 0; margin-top: 0.5rem; }
