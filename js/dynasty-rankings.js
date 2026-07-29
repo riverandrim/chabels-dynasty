@@ -802,6 +802,7 @@ async function renderThreeTierRankings() {
       });
 
       topPlayers.sort((a, b) => b.value - a.value);
+      const starValue = topPlayers.slice(0, 3).reduce((sum, p) => sum + p.value, 0);
 
       // Top-15 average dynasty rank (lower = better). Fall back to whatever is
       // available if a roster somehow has fewer than 15 ranked players.
@@ -812,13 +813,16 @@ async function renderThreeTierRankings() {
       const winNowCount = topPlayers.filter(p => p.age >= 30 && p.rank <= 120).length;
       const eliteCount = rankedRanks.filter(r => r <= 30).length;
 
-      return { ...t, depthValue, avgTop15, topPlayers, top100Count, youngCoreCount, winNowCount, eliteCount, unrankedCount };
+      return { ...t, depthValue, starValue, avgTop15, topPlayers, top100Count, youngCoreCount, winNowCount, eliteCount, unrankedCount };
     });
 
     // Pass 2: normalize each component 0-100 across the league, then blend
     const depthVals = pre.map(t => t.depthValue);
     const maxDepth = Math.max(...depthVals);
     const minDepth = Math.min(...depthVals);
+    const starVals = pre.map(t => t.starValue);
+    const maxStar = Math.max(...starVals);
+    const minStar = Math.min(...starVals);
     const avgVals = pre.map(t => t.avgTop15);
     const bestAvg = Math.min(...avgVals);  // lowest avg rank = best
     const worstAvg = Math.max(...avgVals);
@@ -827,11 +831,13 @@ async function renderThreeTierRankings() {
 
     const scored = pre.map(t => {
       const depthScore = norm(t.depthValue, minDepth, maxDepth) * 100;         // higher raw = higher
+      const starScore = norm(t.starValue, minStar, maxStar) * 100;             // higher top-end value = higher
       const talentScore = (1 - norm(t.avgTop15, bestAvg, worstAvg)) * 100;     // lower avg = higher
       const powerScore = depthScore * blendWeights.depth + talentScore * blendWeights.top15;
       return {
         ...t,
         depthScore,
+        starScore,
         talentScore,
         powerScore,
         topPlayers: t.topPlayers.slice(0, 10)
@@ -1050,7 +1056,7 @@ async function renderThreeTierRankings() {
         <div id="${cardId}" class="pr-card-detail">
           <p class="team-writeup">${writeup}</p>
           <div class="signal-bars">
-            ${scoreBar('Star Power', t.talentScore)}
+            ${scoreBar('Star Power', t.starScore)}
             ${scoreBar('Depth', t.depthScore)}
             ${scoreBar('Youth Core', youthScore)}
             ${scoreBar('Win-Now Value', winNowScore)}
