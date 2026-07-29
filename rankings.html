@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Power Rankings — Chabels Dynasty</title>
-  <link rel="stylesheet" href="css/style.css?v=20260729-fixed-scores">
+  <link rel="stylesheet" href="css/style.css?v=20260729-window-weights">
 </head>
 <body>
 
@@ -47,7 +47,7 @@
     <button class="method-toggle" type="button" onclick="var d=document.getElementById('method-detail');d.style.display=d.style.display==='none'?'grid':'none';this.textContent=d.style.display==='none'?'Show advanced methodology':'Hide advanced methodology';">Show advanced methodology</button>
     <div id="method-detail" class="method-detail" style="display:none;">
       <div><span>Overall Index</span><strong>35% Next Season / 40% 5-Year / 25% 10-Year</strong><p>One summary score that rewards teams that can win now without falling apart long-term.</p></div>
-      <div><span>Window Scores</span><strong>Top End + Depth + Young Stars + Win-Now</strong><p>Scores are fixed-scale. A team no longer gets 0 just because it is the weakest team in this specific league.</p></div>
+      <div><span>Window Scores</span><strong>1Y: Top End + Depth / 5Y-10Y: Youth Heavier</strong><p>The 1-year score ignores age upside and focuses on this season's roster strength. The 5-year and 10-year scores sharply reduce win-now veteran weight.</p></div>
       <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Young Stars / Win-Now / Risk</strong><p>Star Power measures the top three assets. Depth measures the best twelve ranked assets. Young Stars and Win-Now pieces are scored separately.</p></div>
     </div>
 
@@ -125,7 +125,7 @@
 
 <script src="js/gate.js?v=1777342529"></script>
 <script src="js/sleeper.js"></script>
-  <script src="js/dynasty-rankings.js?v=20260729-fixed-scores"></script>
+  <script src="js/dynasty-rankings.js?v=20260729-window-weights"></script>
   <script>renderThreeTierRankings();</script>
 </body>
 </html>

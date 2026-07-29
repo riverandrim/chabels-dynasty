@@ -768,9 +768,9 @@ async function renderThreeTierRankings() {
   }
 
   const componentWeightsByWindow = {
-    '1yr':  { topEnd: 0.35, depth: 0.30, youngStars: 0.10, winNow: 0.25 },
-    '5yr':  { topEnd: 0.30, depth: 0.25, youngStars: 0.30, winNow: 0.15 },
-    '10yr': { topEnd: 0.25, depth: 0.20, youngStars: 0.45, winNow: 0.10 }
+    '1yr':  { topEnd: 0.45, depth: 0.55, youngStars: 0.00, winNow: 0.00 },
+    '5yr':  { topEnd: 0.35, depth: 0.25, youngStars: 0.35, winNow: 0.05 },
+    '10yr': { topEnd: 0.30, depth: 0.15, youngStars: 0.55, winNow: 0.00 }
   };
 
   function teamKey(team) {
