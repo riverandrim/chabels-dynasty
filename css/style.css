@@ -499,6 +499,19 @@ img { max-width: 100%; display: block; }
   background: rgba(255,255,255,0.04);
 }
 
+.profile-pill {
+  background: rgba(255,255,255,0.055);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  padding: 0.18rem 0.55rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .pr-score {
   min-width: 88px;
   text-align: right;
@@ -529,10 +542,63 @@ img { max-width: 100%; display: block; }
   padding: 1rem 2rem 1.35rem;
 }
 
+.team-writeup {
+  color: var(--text-body);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0 0 1rem;
+}
+
+.signal-bars {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.signal-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.signal-bar-label span,
+.driver-group h4 {
+  color: var(--gray-text);
+  font-size: 0.68rem;
+  letter-spacing: 0.35px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.signal-bar-label strong {
+  color: var(--white);
+  font-size: 0.75rem;
+}
+
+.signal-bar-track {
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.signal-bar-track i {
+  background: linear-gradient(90deg, var(--gold), #f3d46b);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+}
+
+.signal-bar.risk .signal-bar-track i {
+  background: linear-gradient(90deg, #ff9a9a, #ff4444);
+}
+
 .signal-grid {
   display: grid;
   gap: 0.6rem;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   margin-bottom: 0.85rem;
 }
 
@@ -563,6 +629,28 @@ img { max-width: 100%; display: block; }
   gap: 0.35rem;
 }
 
+.driver-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.driver-group {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.055);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.driver-group h4 {
+  margin-bottom: 0.55rem;
+}
+
+.driver-empty {
+  color: #666;
+  font-size: 0.78rem;
+}
+
 .player-pill {
   background: rgba(212,175,55,0.1);
   border: 1px solid rgba(212,175,55,0.13);
@@ -575,6 +663,89 @@ img { max-width: 100%; display: block; }
 
 .player-pill span {
   color: var(--gold);
+}
+
+.method-toggle {
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.25);
+  border-radius: 6px;
+  color: var(--gold);
+  cursor: pointer;
+  font-weight: 700;
+  margin: 0 0 1.2rem;
+  padding: 0.65rem 0.9rem;
+}
+
+.method-detail {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1.4rem;
+}
+
+.method-detail div {
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 0.9rem;
+}
+
+.method-detail span {
+  color: var(--gray-text);
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.method-detail strong {
+  color: var(--gold);
+  display: block;
+  font-size: 0.95rem;
+  margin: 0.2rem 0 0.45rem;
+}
+
+.method-detail p {
+  color: var(--text-body);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.overall-table-wrap {
+  overflow-x: auto;
+}
+
+.overall-table {
+  border-collapse: collapse;
+  min-width: 780px;
+  width: 100%;
+}
+
+.overall-table th,
+.overall-table td {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-body);
+  padding: 0.8rem 0.75rem;
+  text-align: left;
+}
+
+.overall-table th {
+  color: var(--gray-text);
+  font-size: 0.72rem;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.tier-divider {
+  border-left: 3px solid var(--gold);
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  margin: 1.45rem 0 0.8rem;
+  padding-left: 0.75rem;
+  text-transform: uppercase;
 }
 
 .pr-info h3 {
@@ -956,7 +1127,17 @@ img { max-width: 100%; display: block; }
     top: 1.05rem;
   }
   .pr-card-detail { padding: 0.85rem 1rem 1rem; }
+  .signal-bars,
+  .driver-grid,
+  .method-detail {
+    grid-template-columns: 1fr;
+  }
   .signal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .team-writeup { font-size: 0.82rem; }
+  .profile-pill,
+  .movement-badge {
+    white-space: normal;
+  }
   .pr-rank {
     font-size: 2rem;
     min-width: 46px;

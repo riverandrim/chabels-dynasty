@@ -785,6 +785,7 @@ async function renderThreeTierRankings() {
       let depthValue = 0;
       let topPlayers = [];
       let rankedRanks = [];
+      let unrankedCount = 0;
 
       t.playerNames.forEach(pName => {
         const dynMatch = findDynastyRank(pName);
@@ -795,6 +796,8 @@ async function renderThreeTierRankings() {
           depthValue += val;
           rankedRanks.push(dynMatch.rank);
           topPlayers.push({ name: dynMatch.name, rank: dynMatch.rank, age: dynMatch.age, value: val });
+        } else {
+          unrankedCount += 1;
         }
       });
 
@@ -809,7 +812,7 @@ async function renderThreeTierRankings() {
       const winNowCount = topPlayers.filter(p => p.age >= 30 && p.rank <= 120).length;
       const eliteCount = rankedRanks.filter(r => r <= 30).length;
 
-      return { ...t, depthValue, avgTop15, topPlayers, top100Count, youngCoreCount, winNowCount, eliteCount };
+      return { ...t, depthValue, avgTop15, topPlayers, top100Count, youngCoreCount, winNowCount, eliteCount, unrankedCount };
     });
 
     // Pass 2: normalize each component 0-100 across the league, then blend
@@ -877,6 +880,107 @@ async function renderThreeTierRankings() {
     return `Long-term profile needs more youth or premium upside to climb.`;
   }
 
+  function scoreBar(label, value, cls = '') {
+    const pct = Math.max(0, Math.min(100, Math.round(value || 0)));
+    return `<div class="signal-bar ${cls}">
+      <div class="signal-bar-label"><span>${label}</span><strong>${pct}/100</strong></div>
+      <div class="signal-bar-track"><i style="width:${pct}%"></i></div>
+    </div>`;
+  }
+
+  function getRiskScore(t) {
+    const shallowPenalty = Math.max(0, 6 - t.top100Count) * 10;
+    const imbalancePenalty = Math.abs(t.talentScore - t.depthScore) * 0.45;
+    const agePenalty = Math.max(0, t.winNowCount - t.youngCoreCount) * 8;
+    return Math.min(100, shallowPenalty + imbalancePenalty + agePenalty + t.unrankedCount * 2);
+  }
+
+  function getTimelineLabel(t, ranks) {
+    const one = ranks['1yr'];
+    const five = ranks['5yr'];
+    const ten = ranks['10yr'];
+    if (one <= 2 && five <= 3) return 'Title Favorite';
+    if (one <= 4 && five <= 5) return 'Contender';
+    if (five <= 4 && ten <= 4) return 'Dynasty Core';
+    if (ten <= 4 && one >= 6) return 'Future Build';
+    if (one <= 4 && ten >= 7) return 'Aging Win-Now';
+    if (t.youngCoreCount >= 5 && t.top100Count < 7) return 'Upside Bet';
+    return 'Middle Tier';
+  }
+
+  function getTier(rank) {
+    if (rank <= 2) return { label: 'Tier 1: Title Favorites', cls: 'tier-one' };
+    if (rank <= 5) return { label: 'Tier 2: Real Contenders', cls: 'tier-two' };
+    if (rank <= 8) return { label: 'Tier 3: Needs One Move', cls: 'tier-three' };
+    return { label: 'Tier 4: Rebuild/Retool', cls: 'tier-four' };
+  }
+
+  function getTeamWriteup(t, window, rank, ranksByTeam) {
+    const ranks = ranksByTeam[teamKey(t)] || {};
+    const lead = t.topPlayers[0]?.name || 'the top asset';
+    const second = t.topPlayers[1]?.name;
+    const core = second ? `${lead} and ${second}` : lead;
+    const risk = getRiskScore(t);
+    const rankLine = window === '1yr'
+      ? `This is the win-now lens, where ${t.name} checks in at #${rank}.`
+      : window === '5yr'
+        ? `This is the dynasty sweet spot, where ${t.name} checks in at #${rank}.`
+        : `This is the long-range lens, where ${t.name} checks in at #${rank}.`;
+    const strength = t.talentScore >= t.depthScore
+      ? `${core} drives the ranking with stronger star power than depth.`
+      : `${core} gives the roster an anchor, but the broader depth is what really lifts the score.`;
+    let concern = `The concern is risk: ${t.unrankedCount} roster spots are outside the current dynasty list, and the risk bar sits at ${Math.round(risk)}/100.`;
+    if (t.youngCoreCount >= 6) concern = `The long-term floor is helped by ${t.youngCoreCount} young top-150 assets, which keeps the roster from being just a short-term build.`;
+    if (window === '1yr' && t.winNowCount >= 4) concern = `The current-season profile is helped by ${t.winNowCount} useful win-now veterans, though that value fades in longer windows.`;
+    const move = ranks['1yr'] && ranks['10yr'] && ranks['1yr'] !== ranks['10yr']
+      ? `The window movement tells the story: #${ranks['1yr']} next season versus #${ranks['10yr']} in the 10-year view.`
+      : `The ranking is fairly stable across windows, which usually means the roster is balanced instead of one-timeline dependent.`;
+    return `${rankLine} ${strength} ${concern} ${move}`;
+  }
+
+  function renderDriverGroup(label, players, emptyText) {
+    const content = players.length
+      ? players.map(p => `<span class="player-pill"><strong>${p.name}</strong> <span>#${p.rank}</span></span>`).join(' ')
+      : `<span class="driver-empty">${emptyText}</span>`;
+    return `<div class="driver-group"><h4>${label}</h4><div class="player-pill-row">${content}</div></div>`;
+  }
+
+  function renderOverallIndex(scoredByWindow, ranksByTeam) {
+    const container = document.getElementById('overall-index');
+    if (!container) return;
+    const byKey = {};
+    Object.entries(scoredByWindow).forEach(([window, scored]) => {
+      scored.forEach(t => {
+        const key = teamKey(t);
+        if (!byKey[key]) byKey[key] = { team: t, scores: {} };
+        byKey[key].scores[window] = t.powerScore;
+      });
+    });
+    const rows = Object.values(byKey).map(row => {
+      const overall = row.scores['1yr'] * 0.35 + row.scores['5yr'] * 0.40 + row.scores['10yr'] * 0.25;
+      return { ...row, overall };
+    }).sort((a, b) => b.overall - a.overall);
+
+    let html = '<div class="overall-table-wrap"><table class="overall-table"><thead><tr><th>#</th><th>Team</th><th>Overall</th><th>1Y</th><th>5Y</th><th>10Y</th><th>Profile</th><th>Movement</th></tr></thead><tbody>';
+    rows.forEach((row, i) => {
+      const ranks = ranksByTeam[teamKey(row.team)] || {};
+      const delta = ranks['10yr'] - ranks['1yr'];
+      const movement = delta === 0 ? 'Stable' : delta > 0 ? `${delta} lower long-term` : `${Math.abs(delta)} higher long-term`;
+      html += `<tr>
+        <td><span class="rank-num">${i + 1}</span></td>
+        <td><strong>${row.team.name}</strong></td>
+        <td>${row.overall.toFixed(1)}</td>
+        <td>${ranks['1yr'] || '-'}</td>
+        <td>${ranks['5yr'] || '-'}</td>
+        <td>${ranks['10yr'] || '-'}</td>
+        <td><span class="profile-pill">${getTimelineLabel(row.team, ranks)}</span></td>
+        <td>${movement}</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+  }
+
   const scoredByWindow = {};
   ['1yr', '5yr', '10yr'].forEach(window => {
     scoredByWindow[window] = buildWindowScores(window);
@@ -895,6 +999,8 @@ async function renderThreeTierRankings() {
   //   1. Depth value  — age-adjusted sum of every ranked player (rewards depth + youth)
   //   2. Top-15 talent — average dynasty rank of each team's 15 best players (pure talent)
   // Both are normalized 0-100 across the league each render, then blended by window.
+  renderOverallIndex(scoredByWindow, ranksByTeam);
+
   ['1yr', '5yr', '10yr'].forEach(window => {
     const scored = scoredByWindow[window];
     const container = containers[window];
@@ -902,20 +1008,33 @@ async function renderThreeTierRankings() {
 
     let html = '';
     scored.forEach((t, i) => {
-      const topList = t.topPlayers.map(p =>
-        `<span class="player-pill"><strong>${p.name}</strong> <span>#${p.rank}</span></span>`
-      ).join(' ');
+      const rank = i + 1;
+      const tier = getTier(rank);
       const movement = getRankMovement(t, window, ranksByTeam);
       const verdict = getTeamVerdict(t, window);
+      const writeup = getTeamWriteup(t, window, rank, ranksByTeam);
+      const ranks = ranksByTeam[teamKey(t)] || {};
+      const profile = getTimelineLabel(t, ranks);
+      const riskScore = getRiskScore(t);
+      const youthScore = Math.min(100, t.youngCoreCount * 14.3);
+      const winNowScore = Math.min(100, t.winNowCount * 20);
+      const topFive = t.topPlayers.slice(0, 5);
+      const youngAssets = t.topPlayers.filter(p => p.age < 25 && p.rank <= 150).slice(0, 5);
+      const winNowVets = t.topPlayers.filter(p => p.age >= 30 && p.rank <= 120).slice(0, 5);
 
       const cardId = `card-${window}-${i}`;
 
+      if (rank === 1 || rank === 3 || rank === 6 || rank === 9) {
+        html += `<div class="tier-divider ${tier.cls}">${tier.label}</div>`;
+      }
+
       html += `<div class="pr-card pr-card--ranking" onclick="document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'none' ? 'block' : 'none'; this.querySelector('.expand-icon').textContent = document.getElementById('${cardId}').style.display === 'none' ? '▶' : '▼';">
         <div class="pr-card-main">
-          <div class="pr-rank">${i + 1}</div>
+          <div class="pr-rank">${rank}</div>
           <div class="pr-team">
             <div class="pr-team-title">
               <h3>${t.name}</h3>
+              <span class="profile-pill">${profile}</span>
               <span class="movement-badge ${movement.cls}">${movement.label}</span>
             </div>
             <p>${verdict}</p>
@@ -927,14 +1046,27 @@ async function renderThreeTierRankings() {
           <span class="expand-icon">▶</span>
         </div>
         <div id="${cardId}" class="pr-card-detail">
+          <p class="team-writeup">${writeup}</p>
+          <div class="signal-bars">
+            ${scoreBar('Star Power', t.talentScore)}
+            ${scoreBar('Depth', t.depthScore)}
+            ${scoreBar('Youth Core', youthScore)}
+            ${scoreBar('Win-Now Value', winNowScore)}
+            ${scoreBar('Risk', riskScore, 'risk')}
+          </div>
           <div class="signal-grid">
             <div><span>Top-15 Avg</span><strong>${t.avgTop15.toFixed(1)}</strong></div>
             <div><span>Talent</span><strong>${t.talentScore.toFixed(0)}/100</strong></div>
             <div><span>Depth</span><strong>${t.depthScore.toFixed(0)}/100</strong></div>
             <div><span>Top 100</span><strong>${t.top100Count}</strong></div>
             <div><span>Young Core</span><strong>${t.youngCoreCount}</strong></div>
+            <div><span>Unranked</span><strong>${t.unrankedCount}</strong></div>
           </div>
-          <div class="player-pill-row">${topList || '<span style="color:#666;">No ranked players found</span>'}</div>
+          <div class="driver-grid">
+            ${renderDriverGroup('Top 5 Drivers', topFive, 'No ranked players found')}
+            ${renderDriverGroup('Young Assets', youngAssets, 'No young top-150 assets')}
+            ${renderDriverGroup('Win-Now Vets', winNowVets, 'No top-120 veterans')}
+          </div>
         </div>
       </div>`;
     });
