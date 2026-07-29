@@ -43,20 +43,20 @@
   <section class="section">
     <h2 class="section-title">How It Works</h2>
     <div class="gold-line"></div>
-    <p class="section-sub">Each team's roster is scored against <a href="https://hashtagbasketball.com/fantasy-basketball-dynasty-rankings" style="color:var(--gold);" target="_blank">Hashtag Basketball's Dynasty Rankings</a>, with Dizzle Dynasty points rookie rankings averaged in for 2026 prospects — a fixed-scale blend of <strong>top-end talent</strong>, <strong>depth</strong>, <strong>young stars</strong>, and <strong>win-now pieces</strong>. No draft picks, no historical record. Player values shift by age based on the time window — young studs matter more in long-term views, while veterans hold value for next season.</p>
+    <p class="section-sub">Each team's roster is scored from two sources: <a href="https://hashtagbasketball.com/fantasy-basketball-points-league-rankings" style="color:var(--gold);" target="_blank">Hashtag's current-season points rankings</a> for win-now value, and <a href="https://hashtagbasketball.com/fantasy-basketball-dynasty-rankings" style="color:var(--gold);" target="_blank">Hashtag's dynasty rankings</a> with Dizzle rookie ranks averaged in for long-term value. No draft picks, no historical record.</p>
     <button class="method-toggle" type="button" onclick="var d=document.getElementById('method-detail');d.style.display=d.style.display==='none'?'grid':'none';this.textContent=d.style.display==='none'?'Show advanced methodology':'Hide advanced methodology';">Show advanced methodology</button>
     <div id="method-detail" class="method-detail" style="display:none;">
       <div><span>Overall Index</span><strong>35% Next Season / 40% 5-Year / 25% 10-Year</strong><p>One summary score that rewards teams that can win now without falling apart long-term.</p></div>
-      <div><span>Window Scores</span><strong>1Y: Top End + Depth / 5Y-10Y: Youth Heavier</strong><p>The 1-year score ignores age upside and focuses on this season's roster strength. The 5-year and 10-year scores sharply reduce win-now veteran weight.</p></div>
-      <div><span>Ranking Sources</span><strong>Hashtag + Dizzle average for rookies</strong><p>If a rookie/prospect appears on both lists, the effective rank is the average of the two ranks. Example: Hashtag #5 and Dizzle #7 becomes #6.</p></div>
-      <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Young Stars / Win-Now / Risk</strong><p>Star Power measures the top three assets. Depth measures the best twelve ranked assets. Young Stars and Win-Now pieces are scored separately.</p></div>
+      <div><span>Window Scores</span><strong>1Y: Current-season points / 5Y-10Y: Dynasty youth weighted</strong><p>The 1-year score now uses Hashtag's points-league ranking for this season only. The 5-year and 10-year scores still use dynasty value, with older win-now pieces heavily reduced.</p></div>
+      <div><span>Ranking Sources</span><strong>Season points + dynasty average for rookies</strong><p>Win-now value comes from Hashtag's 2025-26 points rankings. Long-term dynasty rank uses Hashtag, with Dizzle averaged in when a rookie/prospect appears on both lists.</p></div>
+      <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Young Stars / Win-Now / Risk</strong><p>Star Power and Depth follow the selected window. Young Stars are dynasty-based. Win-Now Value is current-season fantasy points value.</p></div>
     </div>
 
     <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
       <div class="card" style="text-align:center; border-top: 3px solid var(--gold);">
         <div style="font-size:2rem;margin-bottom:0.5rem;">⚡</div>
         <h3 style="color:var(--gold);margin-bottom:0.25rem;">Next Season</h3>
-        <p style="color:var(--text-body);font-size:0.85rem;">Win-now mode. Veterans at full value. Slight penalty for 33+ only. Who's best equipped to win next year?</p>
+        <p style="color:var(--text-body);font-size:0.85rem;">Win-now mode. Built from Hashtag's 2025-26 points-league rankings. Dynasty value and youth upside do not matter here.</p>
       </div>
       <div class="card" style="text-align:center; border-top: 3px solid var(--gold);">
         <div style="font-size:2rem;margin-bottom:0.5rem;">📈</div>
@@ -87,7 +87,7 @@
     </div>
     <div id="sec-1yr">
       <div class="gold-line" style="margin-top:0.75rem;"></div>
-      <p class="section-sub">Who's winning it all next year? Current-roster talent gets the heaviest weight, with a lighter age adjustment for older stars.</p>
+      <p class="section-sub">Who's winning it all next year? This window is based on Hashtag's current-season points rankings, not dynasty value.</p>
       <div id="rankings-1yr"><div class="loading">Loading rankings</div></div>
     </div>
   </section>
@@ -121,12 +121,12 @@
   <!-- Footer -->
   <footer class="footer">
     <p><span class="gold">CHABELS DYNASTY LEAGUE</span> &mdash; Rebound &bull; Execute &bull; Defend</p>
-    <p style="margin-top:0.5rem;font-size:0.7rem;color:#555;">Dynasty rankings sourced from <a href="https://hashtagbasketball.com/fantasy-basketball-dynasty-rankings" style="color:#777;" target="_blank">Hashtag Basketball</a></p>
+    <p style="margin-top:0.5rem;font-size:0.7rem;color:#555;">Current-season and dynasty rankings sourced from <a href="https://hashtagbasketball.com/fantasy-basketball-points-league-rankings" style="color:#777;" target="_blank">Hashtag Basketball</a></p>
   </footer>
 
 <script src="js/gate.js?v=1777342529"></script>
 <script src="js/sleeper.js"></script>
-  <script src="js/dynasty-rankings.js?v=20260729-average-ranks"></script>
+  <script src="js/dynasty-rankings.js?v=20260729-current-season-win-now"></script>
   <script>renderThreeTierRankings();</script>
 </body>
 </html>
