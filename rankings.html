@@ -43,12 +43,12 @@
   <section class="section">
     <h2 class="section-title">How It Works</h2>
     <div class="gold-line"></div>
-    <p class="section-sub">Each team's roster is scored against <a href="https://hashtagbasketball.com/fantasy-basketball-dynasty-rankings" style="color:var(--gold);" target="_blank">Hashtag Basketball's Dynasty Rankings</a>, with Dizzle Dynasty rookie rankings blended in for 2026 prospects — a fixed-scale blend of <strong>top-end talent</strong>, <strong>depth</strong>, <strong>young stars</strong>, and <strong>win-now pieces</strong>. No draft picks, no historical record. Player values shift by age based on the time window — young studs matter more in long-term views, while veterans hold value for next season.</p>
+    <p class="section-sub">Each team's roster is scored against <a href="https://hashtagbasketball.com/fantasy-basketball-dynasty-rankings" style="color:var(--gold);" target="_blank">Hashtag Basketball's Dynasty Rankings</a>, with Dizzle Dynasty points rookie rankings averaged in for 2026 prospects — a fixed-scale blend of <strong>top-end talent</strong>, <strong>depth</strong>, <strong>young stars</strong>, and <strong>win-now pieces</strong>. No draft picks, no historical record. Player values shift by age based on the time window — young studs matter more in long-term views, while veterans hold value for next season.</p>
     <button class="method-toggle" type="button" onclick="var d=document.getElementById('method-detail');d.style.display=d.style.display==='none'?'grid':'none';this.textContent=d.style.display==='none'?'Show advanced methodology':'Hide advanced methodology';">Show advanced methodology</button>
     <div id="method-detail" class="method-detail" style="display:none;">
       <div><span>Overall Index</span><strong>35% Next Season / 40% 5-Year / 25% 10-Year</strong><p>One summary score that rewards teams that can win now without falling apart long-term.</p></div>
       <div><span>Window Scores</span><strong>1Y: Top End + Depth / 5Y-10Y: Youth Heavier</strong><p>The 1-year score ignores age upside and focuses on this season's roster strength. The 5-year and 10-year scores sharply reduce win-now veteran weight.</p></div>
-      <div><span>Ranking Sources</span><strong>Hashtag base + Dizzle rookie adjustment</strong><p>Rookies keep their Hashtag dynasty rank as the base, then get a Dizzle adjustment: 15% in 1Y, 35% in 5Y, and 45% in 10Y.</p></div>
+      <div><span>Ranking Sources</span><strong>Hashtag + Dizzle average for rookies</strong><p>If a rookie/prospect appears on both lists, the effective rank is the average of the two ranks. Example: Hashtag #5 and Dizzle #7 becomes #6.</p></div>
       <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Young Stars / Win-Now / Risk</strong><p>Star Power measures the top three assets. Depth measures the best twelve ranked assets. Young Stars and Win-Now pieces are scored separately.</p></div>
     </div>
 
@@ -126,7 +126,7 @@
 
 <script src="js/gate.js?v=1777342529"></script>
 <script src="js/sleeper.js"></script>
-  <script src="js/dynasty-rankings.js?v=20260729-dizzle-points"></script>
+  <script src="js/dynasty-rankings.js?v=20260729-average-ranks"></script>
   <script>renderThreeTierRankings();</script>
 </body>
 </html>

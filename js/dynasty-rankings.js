@@ -565,13 +565,6 @@ function rankToValue(rank) {
   return 0.5;
 }
 
-function dizzleRankToEquivalentDynastyRank(rookieRank) {
-  // Rookie-only ranks need to be translated onto the 1-460 dynasty scale.
-  // The curve keeps top prospects meaningful without letting a rookie list
-  // overwhelm established NBA dynasty value.
-  return Math.round(10 + Math.pow(rookieRank, 1.18) * 3.2);
-}
-
 // Age decay for different windows
 function ageMultiplier(age, window) {
   if (window === '1yr') {
@@ -866,12 +859,10 @@ async function renderThreeTierRankings() {
 
     if (!match && !rookieMatch) return null;
 
-    const dizzleWeightByWindow = { '1yr': 0.15, '5yr': 0.35, '10yr': 0.45 };
-    const dizzleWeight = rookieMatch ? dizzleWeightByWindow[window] : 0;
-    const dizzleRank = rookieMatch ? dizzleRankToEquivalentDynastyRank(rookieMatch.rookieRank) : null;
+    const dizzleRank = rookieMatch ? rookieMatch.rookieRank : null;
     const hashtagRank = match?.rank || null;
     const effectiveRank = hashtagRank && dizzleRank
-      ? Math.round(hashtagRank * (1 - dizzleWeight) + dizzleRank * dizzleWeight)
+      ? Math.round((hashtagRank + dizzleRank) / 2)
       : (hashtagRank || dizzleRank);
 
     return {
@@ -883,9 +874,11 @@ async function renderThreeTierRankings() {
       age: match?.age || rookieMatch.age,
       team: match?.team || '',
       pos: match?.pos || '',
-      rankLabel: rookieMatch
-        ? `#${effectiveRank} · Dizzle #${rookieMatch.rookieRank}`
-        : `#${effectiveRank}`
+      rankLabel: hashtagRank && dizzleRank
+        ? `#${effectiveRank} · Hashtag #${hashtagRank} / Dizzle #${dizzleRank}`
+        : rookieMatch
+          ? `#${effectiveRank} · Dizzle #${dizzleRank}`
+          : `#${effectiveRank}`
     };
   }
 
@@ -1151,8 +1144,8 @@ async function renderThreeTierRankings() {
   });
 
   // Power score = fixed-scale blend of current-roster signals only (no draft capital, no history):
-  // Hashtag is the base source. Dizzle rookie ranks are blended in for 2026 rookies only:
-  // 15% Dizzle in 1Y, 35% in 5Y, 45% in 10Y.
+  // Hashtag is the base source. For 2026 rookies on Dizzle, the effective
+  // rank is a straight average: Hashtag #5 + Dizzle #7 = effective #6.
   //   1. Top-end talent — the best three age-adjusted assets
   //   2. Depth — the best twelve age-adjusted ranked assets
   //   3. Young stars — under-25 top-150 assets
