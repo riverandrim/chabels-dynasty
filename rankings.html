@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Power Rankings — Chabels Dynasty</title>
-  <link rel="stylesheet" href="css/style.css?v=20260729-star-power">
+  <link rel="stylesheet" href="css/style.css?v=20260729-fixed-scores">
 </head>
 <body>
 
@@ -43,12 +43,12 @@
   <section class="section">
     <h2 class="section-title">How It Works</h2>
     <div class="gold-line"></div>
-    <p class="section-sub">Each team's roster is scored against <a href="https://hashtagbasketball.com/fantasy-basketball-dynasty-rankings" style="color:var(--gold);" target="_blank">Hashtag Basketball's Dynasty Rankings</a> — a blend of each team's <strong>Top-15 average rank</strong> (pure talent) and <strong>age-adjusted roster depth</strong>. No draft picks, no historical record. Player values shift by age based on the time window — young studs matter more in long-term views, while veterans hold value for next season.</p>
+    <p class="section-sub">Each team's roster is scored against <a href="https://hashtagbasketball.com/fantasy-basketball-dynasty-rankings" style="color:var(--gold);" target="_blank">Hashtag Basketball's Dynasty Rankings</a> — a fixed-scale blend of <strong>top-end talent</strong>, <strong>depth</strong>, <strong>young stars</strong>, and <strong>win-now pieces</strong>. No draft picks, no historical record. Player values shift by age based on the time window — young studs matter more in long-term views, while veterans hold value for next season.</p>
     <button class="method-toggle" type="button" onclick="var d=document.getElementById('method-detail');d.style.display=d.style.display==='none'?'grid':'none';this.textContent=d.style.display==='none'?'Show advanced methodology':'Hide advanced methodology';">Show advanced methodology</button>
     <div id="method-detail" class="method-detail" style="display:none;">
       <div><span>Overall Index</span><strong>35% Next Season / 40% 5-Year / 25% 10-Year</strong><p>One summary score that rewards teams that can win now without falling apart long-term.</p></div>
-      <div><span>Window Scores</span><strong>Talent + Depth</strong><p>Talent is the average rank of each roster's best 15 ranked players. Depth is the age-adjusted value of every ranked player.</p></div>
-      <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Youth / Win-Now / Risk</strong><p>Star Power measures the top three ranked assets. The ranking formula still uses top-15 talent plus full-roster depth.</p></div>
+      <div><span>Window Scores</span><strong>Top End + Depth + Young Stars + Win-Now</strong><p>Scores are fixed-scale. A team no longer gets 0 just because it is the weakest team in this specific league.</p></div>
+      <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Young Stars / Win-Now / Risk</strong><p>Star Power measures the top three assets. Depth measures the best twelve ranked assets. Young Stars and Win-Now pieces are scored separately.</p></div>
     </div>
 
     <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
@@ -125,7 +125,7 @@
 
 <script src="js/gate.js?v=1777342529"></script>
 <script src="js/sleeper.js"></script>
-  <script src="js/dynasty-rankings.js?v=20260729-star-power"></script>
+  <script src="js/dynasty-rankings.js?v=20260729-fixed-scores"></script>
   <script>renderThreeTierRankings();</script>
 </body>
 </html>

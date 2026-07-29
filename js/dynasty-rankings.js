@@ -767,10 +767,10 @@ async function renderThreeTierRankings() {
     return match || null;
   }
 
-  const blendWeightsByWindow = {
-    '1yr':  { depth: 0.45, top15: 0.55 },
-    '5yr':  { depth: 0.50, top15: 0.50 },
-    '10yr': { depth: 0.55, top15: 0.45 }
+  const componentWeightsByWindow = {
+    '1yr':  { topEnd: 0.35, depth: 0.30, youngStars: 0.10, winNow: 0.25 },
+    '5yr':  { topEnd: 0.30, depth: 0.25, youngStars: 0.30, winNow: 0.15 },
+    '10yr': { topEnd: 0.25, depth: 0.20, youngStars: 0.45, winNow: 0.10 }
   };
 
   function teamKey(team) {
@@ -778,11 +778,23 @@ async function renderThreeTierRankings() {
   }
 
   function buildWindowScores(window) {
-    const blendWeights = blendWeightsByWindow[window];
+    const weights = componentWeightsByWindow[window];
+    const clampScore = value => Math.max(0, Math.min(100, value));
+    const youngStarValue = player => {
+      if (player.age >= 25 || player.rank > 150) return 0;
+      const youthBoost = player.age < 22 ? 1.2 : 1;
+      return rankToValue(player.rank) * youthBoost;
+    };
+    const winNowValue = player => {
+      if (player.age < 25 || player.rank > 140) return 0;
+      let ageFactor = 1;
+      if (player.age >= 36) ageFactor = 0.35;
+      else if (player.age >= 33) ageFactor = 0.65;
+      else if (player.age >= 30) ageFactor = 0.9;
+      return rankToValue(player.rank) * ageFactor;
+    };
 
-    // Pass 1: compute raw component values per team
-    const pre = teams.map(t => {
-      let depthValue = 0;
+    const scored = teams.map(t => {
       let topPlayers = [];
       let rankedRanks = [];
       let unrankedCount = 0;
@@ -793,16 +805,27 @@ async function renderThreeTierRankings() {
           const baseVal = rankToValue(dynMatch.rank);
           const mult = ageMultiplier(dynMatch.age, window);
           const val = baseVal * mult;
-          depthValue += val;
           rankedRanks.push(dynMatch.rank);
-          topPlayers.push({ name: dynMatch.name, rank: dynMatch.rank, age: dynMatch.age, value: val });
+          topPlayers.push({ name: dynMatch.name, rank: dynMatch.rank, age: dynMatch.age, value: val, baseValue: baseVal });
         } else {
           unrankedCount += 1;
         }
       });
 
       topPlayers.sort((a, b) => b.value - a.value);
-      const starValue = topPlayers.slice(0, 3).reduce((sum, p) => sum + p.value, 0);
+      const topEndValue = topPlayers.slice(0, 3).reduce((sum, p) => sum + p.value, 0);
+      const depthValue = topPlayers.slice(0, 12).reduce((sum, p) => sum + p.value, 0);
+      const youngStarsValue = topPlayers.reduce((sum, p) => sum + youngStarValue(p), 0);
+      const winNowValueTotal = topPlayers.reduce((sum, p) => sum + winNowValue(p), 0);
+      const topEndScore = clampScore((topEndValue / 210) * 100);
+      const depthScore = clampScore((depthValue / 300) * 100);
+      const youngStarsScore = clampScore((youngStarsValue / 180) * 100);
+      const winNowScore = clampScore((winNowValueTotal / 180) * 100);
+      const powerScore =
+        topEndScore * weights.topEnd +
+        depthScore * weights.depth +
+        youngStarsScore * weights.youngStars +
+        winNowScore * weights.winNow;
 
       // Top-15 average dynasty rank (lower = better). Fall back to whatever is
       // available if a roster somehow has fewer than 15 ranked players.
@@ -813,34 +836,26 @@ async function renderThreeTierRankings() {
       const winNowCount = topPlayers.filter(p => p.age >= 30 && p.rank <= 120).length;
       const eliteCount = rankedRanks.filter(r => r <= 30).length;
 
-      return { ...t, depthValue, starValue, avgTop15, topPlayers, top100Count, youngCoreCount, winNowCount, eliteCount, unrankedCount };
-    });
-
-    // Pass 2: normalize each component 0-100 across the league, then blend
-    const depthVals = pre.map(t => t.depthValue);
-    const maxDepth = Math.max(...depthVals);
-    const minDepth = Math.min(...depthVals);
-    const starVals = pre.map(t => t.starValue);
-    const maxStar = Math.max(...starVals);
-    const minStar = Math.min(...starVals);
-    const avgVals = pre.map(t => t.avgTop15);
-    const bestAvg = Math.min(...avgVals);  // lowest avg rank = best
-    const worstAvg = Math.max(...avgVals);
-
-    const norm = (v, lo, hi) => (hi > lo ? (v - lo) / (hi - lo) : 1);
-
-    const scored = pre.map(t => {
-      const depthScore = norm(t.depthValue, minDepth, maxDepth) * 100;         // higher raw = higher
-      const starScore = norm(t.starValue, minStar, maxStar) * 100;             // higher top-end value = higher
-      const talentScore = (1 - norm(t.avgTop15, bestAvg, worstAvg)) * 100;     // lower avg = higher
-      const powerScore = depthScore * blendWeights.depth + talentScore * blendWeights.top15;
       return {
         ...t,
+        topEndValue,
+        depthValue,
+        youngStarsValue,
+        winNowValue: winNowValueTotal,
+        avgTop15,
+        topEndScore,
         depthScore,
-        starScore,
-        talentScore,
+        youngStarsScore,
+        winNowScore,
+        starScore: topEndScore,
+        talentScore: topEndScore,
         powerScore,
-        topPlayers: t.topPlayers.slice(0, 10)
+        topPlayers: topPlayers.slice(0, 10),
+        top100Count,
+        youngCoreCount,
+        winNowCount,
+        eliteCount,
+        unrankedCount
       };
     });
 
@@ -1003,10 +1018,11 @@ async function renderThreeTierRankings() {
     });
   });
 
-  // Power score = blend of two CURRENT-ROSTER signals only (no draft capital, no history):
-  //   1. Depth value  — age-adjusted sum of every ranked player (rewards depth + youth)
-  //   2. Top-15 talent — average dynasty rank of each team's 15 best players (pure talent)
-  // Both are normalized 0-100 across the league each render, then blended by window.
+  // Power score = fixed-scale blend of current-roster signals only (no draft capital, no history):
+  //   1. Top-end talent — the best three age-adjusted assets
+  //   2. Depth — the best twelve age-adjusted ranked assets
+  //   3. Young stars — under-25 top-150 assets
+  //   4. Win-now pieces — useful age-25+ top-140 assets
   renderOverallIndex(scoredByWindow, ranksByTeam);
 
   ['1yr', '5yr', '10yr'].forEach(window => {
@@ -1024,8 +1040,6 @@ async function renderThreeTierRankings() {
       const ranks = ranksByTeam[teamKey(t)] || {};
       const profile = getTimelineLabel(t, ranks);
       const riskScore = getRiskScore(t);
-      const youthScore = Math.min(100, t.youngCoreCount * 14.3);
-      const winNowScore = Math.min(100, t.winNowCount * 20);
       const topFive = t.topPlayers.slice(0, 5);
       const youngAssets = t.topPlayers.filter(p => p.age < 25 && p.rank <= 150).slice(0, 5);
       const winNowVets = t.topPlayers.filter(p => p.age >= 30 && p.rank <= 120).slice(0, 5);
@@ -1058,13 +1072,13 @@ async function renderThreeTierRankings() {
           <div class="signal-bars">
             ${scoreBar('Star Power', t.starScore)}
             ${scoreBar('Depth', t.depthScore)}
-            ${scoreBar('Youth Core', youthScore)}
-            ${scoreBar('Win-Now Value', winNowScore)}
+            ${scoreBar('Young Stars', t.youngStarsScore)}
+            ${scoreBar('Win-Now Value', t.winNowScore)}
             ${scoreBar('Risk', riskScore, 'risk')}
           </div>
           <div class="signal-grid">
             <div><span>Top-15 Avg</span><strong>${t.avgTop15.toFixed(1)}</strong></div>
-            <div><span>Talent</span><strong>${t.talentScore.toFixed(0)}/100</strong></div>
+            <div><span>Top End</span><strong>${t.topEndScore.toFixed(0)}/100</strong></div>
             <div><span>Depth</span><strong>${t.depthScore.toFixed(0)}/100</strong></div>
             <div><span>Top 100</span><strong>${t.top100Count}</strong></div>
             <div><span>Young Core</span><strong>${t.youngCoreCount}</strong></div>
