@@ -912,10 +912,9 @@ async function renderThreeTierRankings() {
   }
 
   function getTier(rank) {
-    if (rank <= 2) return { label: 'Tier 1: Title Favorites', cls: 'tier-one' };
-    if (rank <= 5) return { label: 'Tier 2: Real Contenders', cls: 'tier-two' };
-    if (rank <= 8) return { label: 'Tier 3: Playoff Fringe / Needs a Move', cls: 'tier-three' };
-    return { label: 'Tier 4: Rebuild Zone', cls: 'tier-four' };
+    if (rank <= 3) return { label: 'Tier 1: Title Contenders', cls: 'tier-one' };
+    if (rank <= 7) return { label: 'Tier 2: Middle / Playoff Mix', cls: 'tier-two' };
+    return { label: 'Tier 3: Rebuild / Bottom Tier', cls: 'tier-three' };
   }
 
   function getTeamWriteup(t, window, rank, ranksByTeam) {
@@ -1027,7 +1026,7 @@ async function renderThreeTierRankings() {
 
       const cardId = `card-${window}-${i}`;
 
-      if (rank === 1 || rank === 3 || rank === 6 || rank === 9) {
+      if (rank === 1 || rank === 4 || rank === 8) {
         html += `<div class="tier-divider ${tier.cls}">${tier.label}</div>`;
       }
 
