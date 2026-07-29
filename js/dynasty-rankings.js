@@ -467,6 +467,45 @@ const DYNASTY_DB = [
   { name: "Larry Nance Jr.", rank: 460, age: 33.5, team: "CLE", pos: "PF,C" },
 ];
 
+// Dizzle Dynasty 2026 Rookie Rankings 6.0 (Points tab) — shared on the draft/grades pages.
+// These are used only as a rookie/prospect adjustment layered onto Hashtag's overall dynasty list.
+const DIZZLE_ROOKIE_DB = [
+  { name: "Cameron Boozer", rookieRank: 1, tier: "1", age: 19 },
+  { name: "AJ Dybantsa", rookieRank: 2, tier: "1", age: 19.4 },
+  { name: "Darryn Peterson", rookieRank: 3, tier: "1", age: 19.5 },
+  { name: "Caleb Wilson", rookieRank: 4, tier: "1", age: 20 },
+  { name: "Keaton Wagler", rookieRank: 5, tier: "2", age: 19.4 },
+  { name: "Aday Mara", rookieRank: 6, tier: "2", age: 21.2 },
+  { name: "Darius Acuff Jr.", rookieRank: 7, tier: "2", age: 19.6 },
+  { name: "Mikel Brown Jr.", rookieRank: 8, tier: "2", age: 20.2 },
+  { name: "Kingston Flemings", rookieRank: 9, tier: "2", age: 19.5 },
+  { name: "Yaxel Lendeborg", rookieRank: 10, tier: "3", age: 23.8 },
+  { name: "Bennett Stirtz", rookieRank: 11, tier: "N/A", age: 22 },
+  { name: "Ebuka Okorie", rookieRank: 12, tier: "N/A", age: 19.2 },
+  { name: "Dailyn Swain", rookieRank: 13, tier: "3", age: 21 },
+  { name: "Morez Johnson Jr.", rookieRank: 14, tier: "3", age: 20.4 },
+  { name: "Brayden Burries", rookieRank: 15, tier: "3", age: 20.8 },
+  { name: "Hannes Steinbach", rookieRank: 16, tier: "3", age: 20.2 },
+  { name: "Labaron Philon", rookieRank: 17, tier: "3", age: 20.6 },
+  { name: "Cameron Carr", rookieRank: 18, tier: "4", age: 21 },
+  { name: "Nate Ament", rookieRank: 19, tier: "4", age: 19.6 },
+  { name: "Jayden Quaintance", rookieRank: 20, tier: "3", age: 19.2 },
+  { name: "Karim Lopez", rookieRank: 21, tier: "4", age: 19.5 },
+  { name: "Chris Cenac Jr.", rookieRank: 22, tier: "4", age: 19.7 },
+  { name: "Joshua Jefferson", rookieRank: 23, tier: "4", age: 22.6 },
+  { name: "Tarris Reed Jr.", rookieRank: 27, tier: "4", age: 23 },
+  { name: "Zuby Ejiofor", rookieRank: 29, tier: "4", age: 23 },
+  { name: "Henri Veesaar", rookieRank: 30, tier: "4", age: 22 },
+  { name: "Isaiah Evans", rookieRank: 32, tier: "4", age: 21 },
+  { name: "Sergio De Larrea", rookieRank: 34, tier: "4", age: 20 },
+  { name: "Ryan Conwell", rookieRank: 35, tier: "5", age: 23 },
+  { name: "Bruce Thornton", rookieRank: 36, tier: "5", age: 23 },
+  { name: "Quadir Copeland", rookieRank: 37, tier: "5", age: 22 },
+  { name: "Izaiyah Nelson", rookieRank: 38, tier: "5", age: 21 },
+  { name: "Aaron Nkrumah", rookieRank: 39, tier: "5", age: 21 },
+  { name: "Braden Smith", rookieRank: 40, tier: "6", age: 22 }
+];
+
 // Value function: convert rank to value points (higher = better)
 function rankToValue(rank) {
   if (!rank || rank > 450) return 0.5;
@@ -478,6 +517,13 @@ function rankToValue(rank) {
   if (rank <= 220) return 2 - (rank - 160) * 0.02;  // 2 → 0.8
   if (rank <= 450) return 0.8 - (rank - 220) * 0.002;  // 0.8 → 0.34
   return 0.5;
+}
+
+function dizzleRankToEquivalentDynastyRank(rookieRank) {
+  // Rookie-only ranks need to be translated onto the 1-460 dynasty scale.
+  // The curve keeps top prospects meaningful without letting a rookie list
+  // overwhelm established NBA dynasty value.
+  return Math.round(10 + Math.pow(rookieRank, 1.18) * 3.2);
 }
 
 // Age decay for different windows
@@ -754,17 +800,47 @@ async function renderThreeTierRankings() {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
   // Match player name to dynasty DB (handles accents and suffixes)
-  function findDynastyRank(playerName) {
+  function findRankedPlayer(playerName, window) {
     if (!playerName) return null;
     const clean = normalizeAccents(playerName.toLowerCase().trim());
-    // Exact match (accent-normalized)
-    let match = DYNASTY_DB.find(d => normalizeAccents(d.name.toLowerCase()) === clean);
-    if (match) return match;
-    // Try removing suffixes like Jr., III, II from both sides
     const stripSuffix = s => s.replace(/\s+(jr\.?|sr\.?|ii|iii|iv)$/i, '').trim();
     const cleaned = stripSuffix(clean);
-    match = DYNASTY_DB.find(d => stripSuffix(normalizeAccents(d.name.toLowerCase())) === cleaned);
-    return match || null;
+
+    // Exact match (accent-normalized)
+    let match = DYNASTY_DB.find(d => normalizeAccents(d.name.toLowerCase()) === clean);
+    // Try removing suffixes like Jr., III, II from both sides
+    if (!match) {
+      match = DYNASTY_DB.find(d => stripSuffix(normalizeAccents(d.name.toLowerCase())) === cleaned);
+    }
+
+    let rookieMatch = DIZZLE_ROOKIE_DB.find(d => normalizeAccents(d.name.toLowerCase()) === clean);
+    if (!rookieMatch) {
+      rookieMatch = DIZZLE_ROOKIE_DB.find(d => stripSuffix(normalizeAccents(d.name.toLowerCase())) === cleaned);
+    }
+
+    if (!match && !rookieMatch) return null;
+
+    const dizzleWeightByWindow = { '1yr': 0.15, '5yr': 0.35, '10yr': 0.45 };
+    const dizzleWeight = rookieMatch ? dizzleWeightByWindow[window] : 0;
+    const dizzleRank = rookieMatch ? dizzleRankToEquivalentDynastyRank(rookieMatch.rookieRank) : null;
+    const hashtagRank = match?.rank || null;
+    const effectiveRank = hashtagRank && dizzleRank
+      ? Math.round(hashtagRank * (1 - dizzleWeight) + dizzleRank * dizzleWeight)
+      : (hashtagRank || dizzleRank);
+
+    return {
+      name: match?.name || rookieMatch.name,
+      rank: effectiveRank,
+      hashtagRank,
+      dizzleRank: rookieMatch?.rookieRank || null,
+      dizzleTier: rookieMatch?.tier || null,
+      age: match?.age || rookieMatch.age,
+      team: match?.team || '',
+      pos: match?.pos || '',
+      rankLabel: rookieMatch
+        ? `#${effectiveRank} · Dizzle #${rookieMatch.rookieRank}`
+        : `#${effectiveRank}`
+    };
   }
 
   const componentWeightsByWindow = {
@@ -800,13 +876,23 @@ async function renderThreeTierRankings() {
       let unrankedCount = 0;
 
       t.playerNames.forEach(pName => {
-        const dynMatch = findDynastyRank(pName);
+        const dynMatch = findRankedPlayer(pName, window);
         if (dynMatch) {
           const baseVal = rankToValue(dynMatch.rank);
           const mult = ageMultiplier(dynMatch.age, window);
           const val = baseVal * mult;
           rankedRanks.push(dynMatch.rank);
-          topPlayers.push({ name: dynMatch.name, rank: dynMatch.rank, age: dynMatch.age, value: val, baseValue: baseVal });
+          topPlayers.push({
+            name: dynMatch.name,
+            rank: dynMatch.rank,
+            rankLabel: dynMatch.rankLabel,
+            hashtagRank: dynMatch.hashtagRank,
+            dizzleRank: dynMatch.dizzleRank,
+            dizzleTier: dynMatch.dizzleTier,
+            age: dynMatch.age,
+            value: val,
+            baseValue: baseVal
+          });
         } else {
           unrankedCount += 1;
         }
@@ -963,7 +1049,7 @@ async function renderThreeTierRankings() {
 
   function renderDriverGroup(label, players, emptyText) {
     const content = players.length
-      ? players.map(p => `<span class="player-pill"><strong>${p.name}</strong> <span>#${p.rank}</span></span>`).join(' ')
+      ? players.map(p => `<span class="player-pill"><strong>${p.name}</strong> <span>${p.rankLabel || `#${p.rank}`}</span></span>`).join(' ')
       : `<span class="driver-empty">${emptyText}</span>`;
     return `<div class="driver-group"><h4>${label}</h4><div class="player-pill-row">${content}</div></div>`;
   }
@@ -1019,6 +1105,8 @@ async function renderThreeTierRankings() {
   });
 
   // Power score = fixed-scale blend of current-roster signals only (no draft capital, no history):
+  // Hashtag is the base source. Dizzle rookie ranks are blended in for 2026 rookies only:
+  // 15% Dizzle in 1Y, 35% in 5Y, 45% in 10Y.
   //   1. Top-end talent — the best three age-adjusted assets
   //   2. Depth — the best twelve age-adjusted ranked assets
   //   3. Young stars — under-25 top-150 assets
