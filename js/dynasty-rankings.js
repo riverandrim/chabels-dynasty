@@ -899,20 +899,23 @@ async function renderThreeTierRankings() {
     const one = ranks['1yr'];
     const five = ranks['5yr'];
     const ten = ranks['10yr'];
+    const avgRank = (one + five + ten) / 3;
     if (one <= 2 && five <= 3) return 'Title Favorite';
     if (one <= 4 && five <= 5) return 'Contender';
     if (five <= 4 && ten <= 4) return 'Dynasty Core';
     if (ten <= 4 && one >= 6) return 'Future Build';
     if (one <= 4 && ten >= 7) return 'Aging Win-Now';
-    if (t.youngCoreCount >= 5 && t.top100Count < 7) return 'Upside Bet';
-    return 'Middle Tier';
+    if (avgRank >= 8.5) return ten <= 6 ? 'Deep Rebuild' : 'Bottom Tier';
+    if (avgRank >= 7) return t.youngCoreCount >= 5 ? 'Rebuild Upside' : 'Retool Needed';
+    if (avgRank >= 5.5) return t.youngCoreCount >= 5 && t.top100Count < 7 ? 'Upside Bet' : 'Playoff Fringe';
+    return 'Solid Middle';
   }
 
   function getTier(rank) {
     if (rank <= 2) return { label: 'Tier 1: Title Favorites', cls: 'tier-one' };
     if (rank <= 5) return { label: 'Tier 2: Real Contenders', cls: 'tier-two' };
-    if (rank <= 8) return { label: 'Tier 3: Needs One Move', cls: 'tier-three' };
-    return { label: 'Tier 4: Rebuild/Retool', cls: 'tier-four' };
+    if (rank <= 8) return { label: 'Tier 3: Playoff Fringe / Needs a Move', cls: 'tier-three' };
+    return { label: 'Tier 4: Rebuild Zone', cls: 'tier-four' };
   }
 
   function getTeamWriteup(t, window, rank, ranksByTeam) {
