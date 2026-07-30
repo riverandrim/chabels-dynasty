@@ -47,9 +47,9 @@
     <button class="method-toggle" type="button" onclick="var d=document.getElementById('method-detail');d.style.display=d.style.display==='none'?'grid':'none';this.textContent=d.style.display==='none'?'Show advanced methodology':'Hide advanced methodology';">Show advanced methodology</button>
     <div id="method-detail" class="method-detail" style="display:none;">
       <div><span>Overall Index</span><strong>45% This Year / 55% 5-Year</strong><p>One summary score that balances the current title race with the medium-term dynasty runway.</p></div>
-      <div><span>Window Scores</span><strong>This Year: current-season points / 5-Year: dynasty youth weighted</strong><p>The current-year score uses Hashtag's points-league ranking for this season only. The 5-year score uses dynasty value, with older win-now pieces heavily reduced.</p></div>
-      <div><span>Ranking Sources</span><strong>Season points + full-player dynasty average</strong><p>Win-now value comes from Hashtag's 2025-26 points rankings. Long-term dynasty rank averages Hashtag and Dizzle when a player appears on both lists.</p></div>
-      <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Young Stars / Win-Now / Risk</strong><p>Star Power and Depth follow the selected window. Young Stars are dynasty-based. Win-Now Value is current-season fantasy points value.</p></div>
+      <div><span>Window Scores</span><strong>This Year: current-season rank / 5-Year: dynasty youth weighted</strong><p>The current-year score uses Hashtag's points-league rank order for this season only. The 5-year score uses dynasty value, with older win-now pieces heavily reduced.</p></div>
+      <div><span>Ranking Sources</span><strong>Season rank + full-player dynasty average</strong><p>Win-now value comes from Hashtag's 2025-26 points rank order, not projected points per game. Long-term dynasty rank averages Hashtag and Dizzle when a player appears on both lists.</p></div>
+      <div><span>Card Signals</span><strong>Top-3 Star Power / Depth / Young Stars / Win-Now / Risk</strong><p>Star Power and Depth follow the selected window. Young Stars are dynasty-based. Win-Now Value is current-season rank value.</p></div>
     </div>
 
     <div class="card-grid" style="grid-template-columns: repeat(2, 1fr);">
@@ -108,7 +108,7 @@
 
 <script src="js/gate.js?v=1777342529"></script>
 <script src="js/sleeper.js"></script>
-  <script src="js/dynasty-rankings.js?v=20260729-full-dizzle-average"></script>
+  <script src="js/dynasty-rankings.js?v=20260729-season-rank-no-ppg"></script>
   <script>renderThreeTierRankings();</script>
 </body>
 </html>

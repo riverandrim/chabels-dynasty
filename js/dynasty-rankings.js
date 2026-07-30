@@ -4,7 +4,8 @@
    ============================================ */
 
 // Hashtag Basketball 2025-26 points league rankings.
-// Used for current-season / win-now scoring only; dynasty source stays below for long-term value.
+// Used by rank only for current-season / win-now scoring; raw projected PPG
+// is not displayed or used because Chabels has custom scoring rules.
 const CURRENT_SEASON_POINTS_DB = [
   { name: "Nikola Jokic", rank: 1, points: 60.28, gp: 65 },
   { name: "Luka Doncic", rank: 2, points: 55.49, gp: 64 },
@@ -1855,8 +1856,8 @@ async function renderThreeTierRankings() {
       return rankToValue(player.rank) * youthBoost;
     };
     const winNowValue = player => {
-      // Win-now is current fantasy value, not dynasty value.
-      return player.seasonPoints || 0;
+      // Win-now is current-season rank value, not raw projected PPG.
+      return player.seasonRank ? rankToValue(player.seasonRank) : 0;
     };
 
     const scored = teams.map(t => {
@@ -1870,14 +1871,14 @@ async function renderThreeTierRankings() {
           const baseVal = dynMatch.rank ? rankToValue(dynMatch.rank) : 0;
           const mult = ageMultiplier(dynMatch.age, window);
           const dynastyValue = baseVal * mult;
-          const seasonValue = dynMatch.seasonPoints || 0;
+          const seasonValue = dynMatch.seasonRank ? rankToValue(dynMatch.seasonRank) : 0;
           const val = window === '1yr' ? seasonValue : dynastyValue;
           if (dynMatch.rank) rankedRanks.push(dynMatch.rank);
           topPlayers.push({
             name: dynMatch.name,
             rank: dynMatch.rank,
             rankLabel: window === '1yr' && dynMatch.seasonRank
-              ? `Season #${dynMatch.seasonRank} · ${dynMatch.seasonPoints.toFixed(1)}`
+              ? `Season #${dynMatch.seasonRank}`
               : dynMatch.rankLabel,
             seasonRank: dynMatch.seasonRank,
             seasonPoints: dynMatch.seasonPoints,
@@ -2098,7 +2099,7 @@ async function renderThreeTierRankings() {
   //   1. Top-end talent — the best three players in the selected window
   //   2. Depth — the best twelve players in the selected window
   //   3. Young stars — under-25 top-150 dynasty assets
-  //   4. Win-now pieces — current-season fantasy points value
+  //   4. Win-now pieces — current-season rank value
   renderOverallIndex(scoredByWindow, ranksByTeam);
 
   ['1yr', '5yr'].forEach(window => {
