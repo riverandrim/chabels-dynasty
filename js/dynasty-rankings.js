@@ -1167,7 +1167,7 @@ function ageMultiplier(age, window) {
     if (age >= 22) return 1.1;
     return 1.2; // Under 22 = premium
   } else {
-    // 10-year window: youth is king
+    // Longer-term fallback: youth is king
     if (age >= 36) return 0.05;
     if (age >= 33) return 0.15;
     if (age >= 30) return 0.3;
@@ -1215,7 +1215,7 @@ function pickWindowMultiplier(season, window) {
     // 5yr: all picks matter
     return yr <= 2027 ? 1.0 : 0.8;
   } else {
-    // 10yr: future picks are premium
+    // Longer-term: future picks are premium
     return yr <= 2027 ? 0.9 : 1.1;
   }
 }
@@ -1350,8 +1350,7 @@ function calcHistoricalScore(rosterId) {
 async function renderThreeTierRankings() {
   const containers = {
     '1yr': document.getElementById('rankings-1yr'),
-    '5yr': document.getElementById('rankings-5yr'),
-    '10yr': document.getElementById('rankings-10yr')
+    '5yr': document.getElementById('rankings-5yr')
   };
 
   Object.values(containers).forEach(el => {
@@ -1471,8 +1470,7 @@ async function renderThreeTierRankings() {
 
   const componentWeightsByWindow = {
     '1yr':  { topEnd: 0.45, depth: 0.55, youngStars: 0.00, winNow: 0.00 },
-    '5yr':  { topEnd: 0.35, depth: 0.25, youngStars: 0.35, winNow: 0.05 },
-    '10yr': { topEnd: 0.30, depth: 0.15, youngStars: 0.55, winNow: 0.00 }
+    '5yr':  { topEnd: 0.35, depth: 0.25, youngStars: 0.35, winNow: 0.05 }
   };
 
   function teamKey(team) {
@@ -1582,12 +1580,12 @@ async function renderThreeTierRankings() {
   function getRankMovement(t, window, ranksByTeam) {
     const ranks = ranksByTeam[teamKey(t)] || {};
     if (window === '1yr') {
-      const tenYearRank = ranks['10yr'];
-      if (!tenYearRank || tenYearRank === ranks['1yr']) return { label: 'Same long-term slot', cls: 'neutral' };
-      const delta = tenYearRank - ranks['1yr'];
+      const fiveYearRank = ranks['5yr'];
+      if (!fiveYearRank || fiveYearRank === ranks['1yr']) return { label: 'Same 5Y slot', cls: 'neutral' };
+      const delta = fiveYearRank - ranks['1yr'];
       return delta > 0
-        ? { label: `${delta} spot${delta === 1 ? '' : 's'} lower in 10Y`, cls: 'down' }
-        : { label: `${Math.abs(delta)} spot${Math.abs(delta) === 1 ? '' : 's'} higher in 10Y`, cls: 'up' };
+        ? { label: `${delta} spot${delta === 1 ? '' : 's'} lower in 5Y`, cls: 'down' }
+        : { label: `${Math.abs(delta)} spot${Math.abs(delta) === 1 ? '' : 's'} higher in 5Y`, cls: 'up' };
     }
 
     const oneYearRank = ranks['1yr'];
@@ -1606,16 +1604,10 @@ async function renderThreeTierRankings() {
       if (t.depthScore >= 70) return `Deep roster, lighter on nuclear top-end talent. Needs the whole group to hit.`;
       return `Needs either a star jump or a consolidation trade before it looks scary next season.`;
     }
-    if (window === '5yr') {
-      if (t.youngCoreCount >= 6 && t.top100Count >= 7) return `Clean dynasty core. ${lead}, with enough young top-150 assets to age well.`;
-      if (t.top100Count >= 8) return `Good five-year build, though some of the value is already in its prime.`;
-      if (t.youngCoreCount >= 5) return `Future-leaning roster. The upside is real, but the proven top-end is thinner.`;
-      return `Middle-window value is fragile unless a few younger pieces make a leap.`;
-    }
-    if (t.youngCoreCount >= 7) return `Long-term runway. The roster has multiple young pieces that still gain value in this window.`;
-    if (t.eliteCount >= 2 && t.youngCoreCount >= 4) return `Still dangerous long-term because the elite talent is young enough to matter.`;
-    if (t.winNowCount >= 4) return `Win-now roster fades here. Veterans help today, but the 10-year lens punishes them hard.`;
-    return `Long-term profile needs more youth or premium upside to climb.`;
+    if (t.youngCoreCount >= 6 && t.top100Count >= 7) return `Clean dynasty core. ${lead}, with enough young top-150 assets to age well.`;
+    if (t.top100Count >= 8) return `Good five-year build, though some of the value is already in its prime.`;
+    if (t.youngCoreCount >= 5) return `Future-leaning roster. The upside is real, but the proven top-end is thinner.`;
+    return `Five-year value is fragile unless a few younger pieces make a leap.`;
   }
 
   function scoreBar(label, value, cls = '') {
@@ -1636,14 +1628,13 @@ async function renderThreeTierRankings() {
   function getTimelineLabel(t, ranks) {
     const one = ranks['1yr'];
     const five = ranks['5yr'];
-    const ten = ranks['10yr'];
-    const avgRank = (one + five + ten) / 3;
+    const avgRank = (one + five) / 2;
     if (one <= 2 && five <= 3) return 'Title Favorite';
     if (one <= 4 && five <= 5) return 'Contender';
-    if (five <= 4 && ten <= 4) return 'Dynasty Core';
-    if (ten <= 4 && one >= 6) return 'Future Build';
-    if (one <= 4 && ten >= 7) return 'Aging Win-Now';
-    if (avgRank >= 8.5) return ten <= 6 ? 'Deep Rebuild' : 'Bottom Tier';
+    if (five <= 4 && one <= 6) return 'Dynasty Core';
+    if (five <= 4 && one >= 7) return 'Future Build';
+    if (one <= 4 && five >= 7) return 'Aging Win-Now';
+    if (avgRank >= 8.5) return five <= 6 ? 'Deep Rebuild' : 'Bottom Tier';
     if (avgRank >= 7) return t.youngCoreCount >= 5 ? 'Rebuild Upside' : 'Retool Needed';
     if (avgRank >= 5.5) return t.youngCoreCount >= 5 && t.top100Count < 7 ? 'Upside Bet' : 'Playoff Fringe';
     return 'Solid Middle';
@@ -1663,17 +1654,15 @@ async function renderThreeTierRankings() {
     const risk = getRiskScore(t);
     const rankLine = window === '1yr'
       ? `This is the win-now lens, where ${t.name} checks in at #${rank}.`
-      : window === '5yr'
-        ? `This is the dynasty sweet spot, where ${t.name} checks in at #${rank}.`
-        : `This is the long-range lens, where ${t.name} checks in at #${rank}.`;
+      : `This is the five-year dynasty lens, where ${t.name} checks in at #${rank}.`;
     const strength = t.talentScore >= t.depthScore
       ? `${core} drives the ranking with stronger star power than depth.`
       : `${core} gives the roster an anchor, but the broader depth is what really lifts the score.`;
     let concern = `The concern is risk: ${t.unrankedCount} roster spots are outside the current dynasty list, and the risk bar sits at ${Math.round(risk)}/100.`;
     if (t.youngCoreCount >= 6) concern = `The long-term floor is helped by ${t.youngCoreCount} young top-150 assets, which keeps the roster from being just a short-term build.`;
     if (window === '1yr' && t.winNowCount >= 4) concern = `The current-season profile is helped by ${t.winNowCount} useful win-now veterans, though that value fades in longer windows.`;
-    const move = ranks['1yr'] && ranks['10yr'] && ranks['1yr'] !== ranks['10yr']
-      ? `The window movement tells the story: #${ranks['1yr']} next season versus #${ranks['10yr']} in the 10-year view.`
+    const move = ranks['1yr'] && ranks['5yr'] && ranks['1yr'] !== ranks['5yr']
+      ? `The window movement tells the story: #${ranks['1yr']} this year versus #${ranks['5yr']} in the 5-year view.`
       : `The ranking is fairly stable across windows, which usually means the roster is balanced instead of one-timeline dependent.`;
     return `${rankLine} ${strength} ${concern} ${move}`;
   }
@@ -1697,22 +1686,21 @@ async function renderThreeTierRankings() {
       });
     });
     const rows = Object.values(byKey).map(row => {
-      const overall = row.scores['1yr'] * 0.35 + row.scores['5yr'] * 0.40 + row.scores['10yr'] * 0.25;
+      const overall = row.scores['1yr'] * 0.45 + row.scores['5yr'] * 0.55;
       return { ...row, overall };
     }).sort((a, b) => b.overall - a.overall);
 
-    let html = '<div class="overall-table-wrap"><table class="overall-table"><thead><tr><th>#</th><th>Team</th><th>Overall</th><th>1Y</th><th>5Y</th><th>10Y</th><th>Profile</th><th>Movement</th></tr></thead><tbody>';
+    let html = '<div class="overall-table-wrap"><table class="overall-table"><thead><tr><th>#</th><th>Team</th><th>Overall</th><th>This Year</th><th>5Y</th><th>Profile</th><th>Movement</th></tr></thead><tbody>';
     rows.forEach((row, i) => {
       const ranks = ranksByTeam[teamKey(row.team)] || {};
-      const delta = ranks['10yr'] - ranks['1yr'];
-      const movement = delta === 0 ? 'Stable' : delta > 0 ? `${delta} lower long-term` : `${Math.abs(delta)} higher long-term`;
+      const delta = ranks['5yr'] - ranks['1yr'];
+      const movement = delta === 0 ? 'Stable' : delta > 0 ? `${delta} lower in 5Y` : `${Math.abs(delta)} higher in 5Y`;
       html += `<tr>
         <td><span class="rank-num">${i + 1}</span></td>
         <td><strong>${row.team.name}</strong></td>
         <td>${row.overall.toFixed(1)}</td>
         <td>${ranks['1yr'] || '-'}</td>
         <td>${ranks['5yr'] || '-'}</td>
-        <td>${ranks['10yr'] || '-'}</td>
         <td><span class="profile-pill">${getTimelineLabel(row.team, ranks)}</span></td>
         <td>${movement}</td>
       </tr>`;
@@ -1722,7 +1710,7 @@ async function renderThreeTierRankings() {
   }
 
   const scoredByWindow = {};
-  ['1yr', '5yr', '10yr'].forEach(window => {
+  ['1yr', '5yr'].forEach(window => {
     scoredByWindow[window] = buildWindowScores(window);
   });
 
@@ -1737,7 +1725,7 @@ async function renderThreeTierRankings() {
 
   // Power score = fixed-scale blend of current-roster signals only (no draft capital, no history):
   // The 1-year view uses Hashtag's current-season points rankings only.
-  // The 5/10-year views use dynasty rank. For 2026 rookies on Dizzle, the
+  // The 5-year view uses dynasty rank. For 2026 rookies on Dizzle, the
   // effective dynasty rank is a straight average: Hashtag #5 + Dizzle #7 = #6.
   //   1. Top-end talent — the best three players in the selected window
   //   2. Depth — the best twelve players in the selected window
@@ -1745,7 +1733,7 @@ async function renderThreeTierRankings() {
   //   4. Win-now pieces — current-season fantasy points value
   renderOverallIndex(scoredByWindow, ranksByTeam);
 
-  ['1yr', '5yr', '10yr'].forEach(window => {
+  ['1yr', '5yr'].forEach(window => {
     const scored = scoredByWindow[window];
     const container = containers[window];
     if (!container) return;
